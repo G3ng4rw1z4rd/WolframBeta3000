@@ -1,0 +1,2419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔥 Wolfram Beta 3000 🔥</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <style>
+    :root {
+      --primary: #7549dd;
+      --dark-bg: #121212;
+      --card-bg: #1e1e1e;
+      --text: #e0e0e0;
+      --accent: #4a9eff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--dark-bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a1a, #2d1a1a);
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.6rem;
+      font-family: 'Courier New', monospace;
+      border-bottom: 2px solid var(--primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(255, 107, 53, 0.7);
+    }
+
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    #outputArea {
+      order: -1;
+      flex: 0 0 320px;
+      display: flex;
+      flex-direction: column;
+      background: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #plotArea {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    #plot3d,
+    #plot2d,
+    #contourPlot {
+      width: 100%;
+      height: 100%;
+    }
+
+    #plot2d,
+    #contourPlot {
+      display: none;
+    }
+
+    #functionList {
+      min-height: 120px;
+      max-height: 240px;
+      overflow-y: auto;
+      background: #171717;
+      border-bottom: 1px solid #333;
+      padding: 10px;
+    }
+
+    .function-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #222;
+      border: 1px solid #303030;
+    }
+
+    .function-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      flex: 0 0 12px;
+    }
+
+    .function-name {
+      flex: 1;
+      font-family: Consolas, monospace;
+      color: #ddd;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .function-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .function-btn {
+      border: none;
+      background: #303030;
+      color: #ddd;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .function-btn:hover {
+      background: #444;
+    }
+
+    #history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      font-family: 'Consolas', monospace;
+      border-bottom: 1px solid #333;
+      white-space: pre-wrap;
+      background: #1a1a1a;
+      line-height: 1.4;
+    }
+
+    #analysis {
+      padding: 15px;
+      font-family: 'Consolas', monospace;
+      background: #1a1a1a;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    #controls {
+      display: flex;
+      padding: 15px;
+      background: #1a1a1a;
+      border-top: 2px solid #333;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #expr {
+      flex: 1;
+      padding: 12px 15px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #2a2a2a;
+      color: var(--text);
+      font-family: 'Consolas', monospace;
+    }
+
+    #expr:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    }
+
+    #colorPicker {
+      width: 50px;
+      height: 40px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #ff5722;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .tab-container {
+      display: flex;
+      background: #252525;
+      border-bottom: 1px solid #333;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #2a2a2a;
+      border-right: 1px solid #333;
+      transition: background 0.2s;
+    }
+
+    .tab.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .tab:hover:not(.active) {
+      background: #303030;
+    }
+
+    .domain-check {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      background: #2a1a1a;
+      border-left: 3px solid var(--primary);
+    }
+
+    .error { color: #ff6b6b; }
+    .success { color: #6bff6b; }
+    .warning { color: #ffb86b; }
+
+    .plot-controls {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .plot-btn {
+      padding: 8px 12px;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 5px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      border: 1px solid #444;
+      transition: all 0.2s;
+    }
+
+    .plot-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      border-color: var(--accent);
+    }
+
+    .plot-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .history-entry {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    .input-expr {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .output-result {
+      color: var(--text);
+      margin-top: 5px;
+    }
+
+    .analysis-title {
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .analysis-item {
+      margin-bottom: 8px;
+      display: flex;
+    }
+
+    .analysis-label {
+      flex: 0 0 150px;
+      color: #aaa;
+    }
+
+    .analysis-value {
+      flex: 1;
+    }
+
+    .material-controls {
+      position: absolute;
+      top: 50px;
+      right: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .color-mode-controls {
+      position: absolute;
+      top: 150px;
+      right: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    #complexWrapper {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: relative;
+      background: #05060a;
+      overflow: hidden;
+    }
+
+    #complexPlot {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #05060a;
+      cursor: crosshair;
+    }
+
+    #complexHud {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 20;
+      background: rgba(10, 10, 16, 0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      color: #ddd;
+      line-height: 1.5;
+      pointer-events: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    #complexExpr { color: #b58cff; font-weight: bold; }
+    #complexMouse { color: #7fd7ff; }
+    #complexView { color: #9adf9f; }
+
+    .plotly-graph-div {
+      width: 100%;
+      height: 100%;
+    }
+
+    .material-controls,
+    .color-mode-controls,
+    .plot-controls.three-only {
+      display: none;
+    }
+
+    .complex-style-controls {
+      position: absolute;
+      top: 50px;
+      right: 15px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">🔥 Wolfram Beta 3000 🔥</span>
+  </header>
+
+  <main>
+    <div id="outputArea">
+      <div id="functionList"></div>
+
+      <div id="history">
+        <div class="history-entry">
+          <div class="input-expr">~[math]> Bem-vindo ao Wolfram Beta 3000</div>
+          <div class="output-result">Digite uma expressão matemática para começar</div>
+        </div>
+        <div class="history-entry">
+          <div class="input-expr">~[math]> Exemplos:</div>
+          <div class="output-result">- sin(x) * cos(x)</div>
+          <div class="output-result">- x^3 - 2x + 1</div>
+          <div class="output-result">- contour x^2 + y^2</div>
+          <div class="output-result">- surface sin(x) + cos(y)</div>
+          <div class="output-result">- domaincolor 1/z</div>
+          <div class="output-result">- domaincolor (z-1)/(z+1)</div>
+          <div class="output-result">- domaincolor Mandelbrot(z)</div>
+          <div class="output-result">- clear2d</div>
+        </div>
+      </div>
+
+      <div id="analysis">
+        <div class="analysis-title">📊 Análise da Expressão</div>
+        <div class="analysis-item">
+          <div class="analysis-label">Domínio:</div>
+          <div class="analysis-value" id="domain-value">Aguardando entrada...</div>
+        </div>
+        <div class="analysis-item">
+          <div class="analysis-label">Tipo:</div>
+          <div class="analysis-value" id="type-value">-</div>
+        </div>
+        <div class="analysis-item">
+          <div class="analysis-label">Simetria:</div>
+          <div class="analysis-value" id="symmetry-value">-</div>
+        </div>
+        <div class="domain-check" id="domain-check"></div>
+      </div>
+    </div>
+
+    <div id="plotArea">
+      <div class="tab-container">
+        <div class="tab active" data-tab="3d">Visualização 3D</div>
+        <div class="tab" data-tab="2d">Gráfico 2D</div>
+        <div class="tab" data-tab="complex">Gráfico complexo</div>
+        <div class="tab" data-tab="contour">Mapa de Contorno</div>
+      </div>
+
+      <div id="plot3d"></div>
+      <div id="plot2d"></div>
+
+      <div id="complexWrapper">
+        <canvas id="complexPlot"></canvas>
+        <div id="complexHud">
+          <div id="complexExpr">f(z) = (z-1)/(z+1)</div>
+          <div id="complexMouse">z = 0 + 0i</div>
+          <div id="complexView">centro: 0 + 0i | escala: 4.000000</div>
+        </div>
+      </div>
+
+      <div id="contourPlot"></div>
+
+      <div class="plot-controls three-only">
+        <div class="plot-btn" id="resetView">Redefinir Vista</div>
+        <div class="plot-btn" id="toggleGrid">Alternar Grade</div>
+        <div class="plot-btn" id="toggleAxes">Alternar Eixos</div>
+        <div class="plot-btn" id="toggleWireframe">Wireframe</div>
+        <div class="plot-btn" id="toggleAnimation">Ligar Animação</div>
+      </div>
+
+      <div class="material-controls">
+        <div class="plot-btn" id="plasticMaterial">Plástico</div>
+        <div class="plot-btn" id="metalMaterial">Metal</div>
+        <div class="plot-btn" id="glassMaterial">Vidro</div>
+      </div>
+
+      <div class="complex-style-controls" id="complexStyleControls">
+        <div class="plot-btn active" data-cstyle="classic">Classic</div>
+        <div class="plot-btn" data-cstyle="dark">Dark</div>
+        <div class="plot-btn" data-cstyle="fractal">Fractal</div>
+        <div class="plot-btn" data-cstyle="neon">Neon</div>
+        <div class="plot-btn" data-cstyle="pastel">Pastel</div>
+        <div class="plot-btn" data-cstyle="phasegrid">Phase Grid</div>
+        <div class="plot-btn" data-cstyle="checker">Checker</div>
+        <div class="plot-btn" data-cstyle="redblue">Red/Blue Grid</div>
+        <div class="plot-btn" data-cstyle="tiles">Tiles</div>
+        <div class="plot-btn" data-cstyle="bubbles">Bubbles</div>
+        <div class="plot-btn" data-cstyle="smoothbands">Smooth Bands</div>
+      </div>
+
+      <div class="color-mode-controls">
+        <div class="plot-btn" id="solidColor">Cor Sólida</div>
+        <div class="plot-btn active" id="rainbowColor">Arco-Íris</div>
+        <div class="plot-btn" id="heightColor">Por Altura</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="controls">
+    <input id="expr" type="text" placeholder="Digite expressão matemática (ex: sin(x)^2 + cos(x)^2)">
+    <input id="colorPicker" type="color" value="#ff6b35" title="Cor do gráfico">
+    <button id="runBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM6.5 5a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM6 7.5a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5zm0 2a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5z"/>
+      </svg>
+      Executar
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/user52251/t@7cb7222/wasmLib.js"></script>
+  <script>
+    let DescartesInstance = null;
+    let scene, camera, renderer, controls;
+    let currentObjects = [];
+    let currentMesh = null;
+    let showGrid = true;
+    let showAxes = true;
+    let showWireframe = false;
+    let isAnimating = false;
+    let currentPlotData = null;
+    let currentMaterialType = 'plastic';
+    let currentColorMode = 'rainbow';
+    let currentContourPlot = null;
+    let complexGL = null;
+    let complexColorStyle = 'classic';
+    let plot2DSeries = [];
+    let nextSeriesId = 1;
+
+    const plotPalette = [
+      '#ff6b6b',
+      '#4dabf7',
+      '#51cf66',
+      '#ffd43b',
+      '#b197fc',
+      '#ffa94d',
+      '#63e6be',
+      '#f783ac',
+      '#74c0fc',
+      '#ced4da'
+    ];
+
+    const rainbowColors = [
+      0xff0000,
+      0xff7f00,
+      0xffff00,
+      0x00ff00,
+      0x0000ff,
+      0x4b0082,
+      0x9400d3
+    ];
+
+    function initComplexStyleControls() {
+      const wrap = document.getElementById('complexStyleControls');
+      if (!wrap) return;
+
+      wrap.querySelectorAll('[data-cstyle]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          wrap.querySelectorAll('[data-cstyle]').forEach(x => x.classList.remove('active'));
+          btn.classList.add('active');
+          complexColorStyle = btn.getAttribute('data-cstyle');
+          if (complexGL && complexGL.setColorStyle) {
+            complexGL.setColorStyle(complexColorStyle);
+          }
+        });
+      });
+    }
+
+    function initThreeJS() {
+      const container = document.getElementById('plot3d');
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x7d7d7d);
+
+      camera = new THREE.PerspectiveCamera(
+        75,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(8, 8, 8);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = false;
+      controls.dampingFactor = 0.05;
+
+      const ambientLight = new THREE.AmbientLight(0xeeeeee, 0.6);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 5);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      const pointLight = new THREE.PointLight(0xffffff, 0.5);
+      pointLight.position.set(-10, 10, 10);
+      scene.add(pointLight);
+
+      addGrid();
+      addAxes();
+      animate();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function addGrid() {
+      if (!showGrid) return;
+      const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+      gridHelper.position.y = -0.01;
+      scene.add(gridHelper);
+      currentObjects.push(gridHelper);
+    }
+
+    function addAxes() {
+      if (!showAxes) return;
+      const axesHelper = new THREE.AxesHelper(8);
+      scene.add(axesHelper);
+      currentObjects.push(axesHelper);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (isAnimating && currentMesh) {
+        currentMesh.rotation.y += 0.01;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('plot3d');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+
+      if (complexGL && complexGL.render) complexGL.render();
+      if (plot2DSeries.length > 0) render2DPlot();
+    }
+
+    function setTabUI(tabType) {
+      document.getElementById('plot3d').style.display = 'none';
+      document.getElementById('plot2d').style.display = 'none';
+      document.getElementById('complexWrapper').style.display = 'none';
+      document.getElementById('contourPlot').style.display = 'none';
+
+      const threeOnly = document.querySelector('.plot-controls.three-only');
+      const materialControls = document.querySelector('.material-controls');
+      const colorControls = document.querySelector('.color-mode-controls');
+      const complexControls = document.getElementById('complexStyleControls');
+
+      if (threeOnly) threeOnly.style.display = 'none';
+      if (materialControls) materialControls.style.display = 'none';
+      if (colorControls) colorControls.style.display = 'none';
+      if (complexControls) complexControls.style.display = 'none';
+
+      if (tabType === '2d') {
+        document.getElementById('plot2d').style.display = 'block';
+      } else if (tabType === 'complex') {
+        document.getElementById('complexWrapper').style.display = 'block';
+        if (complexControls) complexControls.style.display = 'flex';
+      } else if (tabType === 'contour') {
+        document.getElementById('contourPlot').style.display = 'block';
+      } else {
+        document.getElementById('plot3d').style.display = 'block';
+        if (threeOnly) threeOnly.style.display = 'flex';
+        if (materialControls) materialControls.style.display = 'flex';
+        if (colorControls) colorControls.style.display = 'flex';
+      }
+    }
+
+    function initTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          setTabUI(tab.getAttribute('data-tab'));
+        });
+      });
+
+      setTabUI('3d');
+    }
+
+    function initPlotControls() {
+      document.getElementById('resetView').addEventListener('click', () => {
+        controls.reset();
+        camera.position.set(8, 8, 8);
+        if (complexGL && complexGL.resetView) complexGL.resetView();
+      });
+
+      document.getElementById('toggleGrid').addEventListener('click', () => {
+        showGrid = !showGrid;
+        updateScene();
+      });
+
+      document.getElementById('toggleAxes').addEventListener('click', () => {
+        showAxes = !showAxes;
+        updateScene();
+      });
+
+      document.getElementById('toggleWireframe').addEventListener('click', function() {
+        showWireframe = !showWireframe;
+        updateButtonState('toggleWireframe', showWireframe);
+        updateMaterial();
+      });
+
+      document.getElementById('toggleAnimation').addEventListener('click', function() {
+        isAnimating = !isAnimating;
+        updateButtonState('toggleAnimation', isAnimating);
+      });
+
+      document.getElementById('plasticMaterial').addEventListener('click', () => {
+        currentMaterialType = 'plastic';
+        updateMaterial();
+        updateMaterialButtons('plasticMaterial');
+      });
+
+      document.getElementById('metalMaterial').addEventListener('click', () => {
+        currentMaterialType = 'metal';
+        updateMaterial();
+        updateMaterialButtons('metalMaterial');
+      });
+
+      document.getElementById('glassMaterial').addEventListener('click', () => {
+        currentMaterialType = 'glass';
+        updateMaterial();
+        updateMaterialButtons('glassMaterial');
+      });
+
+      document.getElementById('solidColor').addEventListener('click', () => {
+        currentColorMode = 'solid';
+        updateColorMode();
+        updateColorButtons('solidColor');
+      });
+
+      document.getElementById('rainbowColor').addEventListener('click', () => {
+        currentColorMode = 'rainbow';
+        updateColorMode();
+        updateColorButtons('rainbowColor');
+      });
+
+      document.getElementById('heightColor').addEventListener('click', () => {
+        currentColorMode = 'height';
+        updateColorMode();
+        updateColorButtons('heightColor');
+      });
+    }
+
+    function updateScene() {
+      clearScene();
+      if (showGrid) addGrid();
+      if (showAxes) addAxes();
+      if (currentPlotData) redrawCurrentPlot();
+    }
+
+    function redrawCurrentPlot() {
+      if (!currentPlotData) return;
+
+      if (currentPlotData.type === '3d') {
+        if (currentPlotData.axis) {
+          drawRevolution(currentPlotData.points, currentPlotData.axis);
+        } else if (currentPlotData.surfaceType === '2d') {
+          drawSurface2DFromData(currentPlotData.points);
+        } else {
+          drawSolidFromData(currentPlotData.points);
+        }
+      } else if (currentPlotData.type === '2d') {
+        render2DPlot();
+      } else if (currentPlotData.type === 'complex') {
+        if (complexGL && complexGL.render) complexGL.render();
+      }
+    }
+
+    function updateButtonState(buttonId, isActive) {
+      const button = document.getElementById(buttonId);
+      button.classList.toggle('active', !!isActive);
+    }
+
+    function updateMaterialButtons(activeButtonId) {
+      const materialButtons = ['plasticMaterial', 'metalMaterial', 'glassMaterial'];
+      materialButtons.forEach(buttonId => {
+        document.getElementById(buttonId).classList.toggle('active', buttonId === activeButtonId);
+      });
+    }
+
+    function updateColorButtons(activeButtonId) {
+      const colorButtons = ['solidColor', 'rainbowColor', 'heightColor'];
+      colorButtons.forEach(buttonId => {
+        document.getElementById(buttonId).classList.toggle('active', buttonId === activeButtonId);
+      });
+    }
+
+    function updateMaterial() {
+      if (!currentMesh) return;
+
+      const baseColor = getColorFromPicker();
+
+      switch (currentMaterialType) {
+        case 'plastic':
+          currentMesh.material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            shininess: 30,
+            wireframe: showWireframe
+          });
+          break;
+        case 'metal':
+          currentMesh.material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            shininess: 100,
+            specular: 0x555555,
+            wireframe: showWireframe
+          });
+          break;
+        case 'glass':
+          currentMesh.material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            transparent: true,
+            opacity: 0.7,
+            shininess: 90,
+            specular: 0xffffff,
+            wireframe: showWireframe
+          });
+          break;
+      }
+
+      updateColorMode();
+    }
+
+    function updateColorMode() {
+      if (!currentMesh) return;
+
+      switch (currentColorMode) {
+        case 'rainbow':
+          applyRainbowColors();
+          break;
+        case 'height':
+          applyHeightColors();
+          break;
+        case 'solid':
+          break;
+      }
+    }
+
+    function applyRainbowColors() {
+      if (!currentMesh || !currentMesh.geometry) return;
+
+      const colors = [];
+      const positions = currentMesh.geometry.attributes.position.array;
+
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i];
+        const y = positions[i + 1];
+        const z = positions[i + 2];
+
+        const colorIndex = Math.abs(Math.floor((x + y + z) * 10)) % rainbowColors.length;
+        const color = new THREE.Color(rainbowColors[colorIndex]);
+
+        colors.push(color.r, color.g, color.b);
+      }
+
+      currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      currentMesh.material.vertexColors = true;
+      currentMesh.material.needsUpdate = true;
+    }
+
+    function applyHeightColors() {
+      if (!currentMesh || !currentMesh.geometry) return;
+
+      const colors = [];
+      const positions = currentMesh.geometry.attributes.position.array;
+
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      for (let i = 1; i < positions.length; i += 3) {
+        const y = positions[i];
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+
+      for (let i = 1; i < positions.length; i += 3) {
+        const y = positions[i];
+        const normalizedY = (y - minY) / (maxY - minY || 1);
+
+        const color = new THREE.Color();
+        color.setHSL(0.7 - normalizedY * 0.7, 0.8, 0.5);
+
+        colors.push(color.r, color.g, color.b);
+      }
+
+      currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      currentMesh.material.vertexColors = true;
+      currentMesh.material.needsUpdate = true;
+    }
+
+    function clearScene() {
+      currentObjects.forEach(obj => scene.remove(obj));
+      currentObjects = [];
+      currentMesh = null;
+    }
+
+    function adjustDomainForExpression(expr) {
+      const domainCheckEl = document.getElementById('domain-check');
+      const domainValueEl = document.getElementById('domain-value');
+
+      if (!domainCheckEl || !domainValueEl) return { min: -5, max: 5 };
+
+      let min = -5;
+      let max = 5;
+      let message = "Domínio padrão: [-5, 5]";
+      let type = "padrão";
+
+      if (expr.includes('sqrt(')) {
+        min = 0;
+        message = "Domínio ajustado: [0, 5]";
+        type = "raiz quadrada";
+      }
+
+      if (expr.includes('ln(') || expr.includes('log(')) {
+        min = 0.1;
+        message = "Domínio ajustado: [0.1, 5]";
+        type = "logaritmo";
+      }
+
+      if (expr.includes('asin(') || expr.includes('acos(') || expr.includes('atan(')) {
+        min = -1;
+        max = 1;
+        message = "Domínio ajustado: [-1, 1]";
+        type = "trigonométrica inversa";
+      }
+
+      domainCheckEl.innerHTML = `<span class="success">✅ ${message}</span>`;
+      domainValueEl.innerHTML = `<span class="success">${type}</span>`;
+
+      return { min, max };
+    }
+
+    function analyzeExpression(expr) {
+      const typeValueEl = document.getElementById('type-value');
+      const symmetryValueEl = document.getElementById('symmetry-value');
+
+      if (!typeValueEl || !symmetryValueEl) return;
+
+      let type = "Função";
+      if (expr.includes('sin') || expr.includes('cos') || expr.includes('tan')) {
+        type = "Trigonométrica";
+      } else if (expr.includes('log') || expr.includes('ln')) {
+        type = "Logarítmica";
+      } else if (expr.includes('^')) {
+        type = "Polinomial/Potência";
+      } else if (expr.includes('sqrt')) {
+        type = "Radical";
+      } else if (expr.includes('x') && expr.includes('y')) {
+        type = "Função 2D";
+      }
+
+      typeValueEl.textContent = type;
+      symmetryValueEl.textContent = "Não determinada";
+    }
+
+    function sanitize(val) {
+      if (val === null || val === undefined) return null;
+      if (typeof val === "string" && (val.toLowerCase().includes("nan") || val.toLowerCase().includes("inf"))) return null;
+      if (typeof val === "number" && (!isFinite(val) || isNaN(val))) return null;
+      return val;
+    }
+
+    function getColorFromPicker() {
+      return document.getElementById('colorPicker')?.value || '#ff6b35';
+    }
+
+    function add2DSeries(expr, points, domain) {
+      const color = plotPalette[(nextSeriesId - 1) % plotPalette.length];
+
+      plot2DSeries.push({
+        id: nextSeriesId++,
+        expr,
+        points,
+        domain,
+        color,
+        visible: true
+      });
+
+      renderFunctionList();
+      render2DPlot();
+    }
+
+    function remove2DSeries(id) {
+      plot2DSeries = plot2DSeries.filter(s => s.id !== id);
+      renderFunctionList();
+      render2DPlot();
+    }
+
+    function toggle2DSeries(id) {
+      const item = plot2DSeries.find(s => s.id === id);
+      if (!item) return;
+      item.visible = !item.visible;
+      renderFunctionList();
+      render2DPlot();
+    }
+
+    window.remove2DSeries = remove2DSeries;
+    window.toggle2DSeries = toggle2DSeries;
+
+    function renderFunctionList() {
+      const list = document.getElementById('functionList');
+      if (!list) return;
+
+      if (plot2DSeries.length === 0) {
+        list.innerHTML = `<div style="color:#888;font-family:Consolas,monospace;">Nenhuma função 2D carregada.</div>`;
+        return;
+      }
+
+      list.innerHTML = plot2DSeries.map(item => `
+        <div class="function-item">
+          <div class="function-dot" style="background:${item.color}"></div>
+          <div class="function-name">${item.expr}</div>
+          <div class="function-actions">
+            <button class="function-btn" onclick="toggle2DSeries(${item.id})">${item.visible ? 'Ocultar' : 'Mostrar'}</button>
+            <button class="function-btn" onclick="remove2DSeries(${item.id})">X</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function render2DPlot() {
+      const container = document.getElementById('plot2d');
+      if (!container) return;
+
+      const visibleSeries = plot2DSeries.filter(s => s.visible);
+
+      if (visibleSeries.length === 0) {
+        Plotly.purge(container);
+        return;
+      }
+
+      const traces = visibleSeries.map(item => ({
+        x: item.points.map(p => p[0]),
+        y: item.points.map(p => p[1]),
+        type: 'scattergl',
+        mode: 'lines',
+        name: item.expr,
+        line: {
+          color: item.color,
+          width: 3
+        },
+        hovertemplate: `${item.expr}<br>x=%{x:.4f}<br>y=%{y:.4f}<extra></extra>`
+      }));
+
+      const layout = {
+        paper_bgcolor: '#1e1e1e',
+        plot_bgcolor: '#1e1e1e',
+        font: { color: '#e0e0e0' },
+        margin: { l: 50, r: 20, t: 20, b: 40 },
+        showlegend: false,
+        xaxis: {
+          title: 'x',
+          gridcolor: '#333',
+          zerolinecolor: '#666'
+        },
+        yaxis: {
+          title: 'y',
+          gridcolor: '#333',
+          zerolinecolor: '#666'
+        }
+      };
+
+      Plotly.react(container, traces, layout, {
+        responsive: true,
+        displaylogo: false,
+        scrollZoom: true
+      });
+    }
+
+    function formatComplex(x, y) {
+      const xr = Math.abs(x) < 1e-12 ? 0 : x;
+      const yr = Math.abs(y) < 1e-12 ? 0 : y;
+      const sign = yr >= 0 ? "+" : "-";
+      return `${xr.toFixed(6)} ${sign} ${Math.abs(yr).toFixed(6)}i`;
+    }
+
+    function getComplexShaderBody(exprText) {
+      if (!DescartesInstance) {
+        throw new Error("WASM ainda não carregou");
+      }
+
+      if (typeof DescartesInstance.complexToGLSL !== "function") {
+        console.log("Exports disponíveis:", Object.keys(DescartesInstance));
+        throw new Error("complexToGLSL não foi encontrado nos exports");
+      }
+
+      const glslExpr = DescartesInstance.complexToGLSL(exprText);
+      console.log("GLSL:", glslExpr);
+
+      if (!glslExpr || typeof glslExpr !== "string") {
+        throw new Error("GLSL complexo inválido");
+      }
+
+      return `return ${glslExpr};`;
+    }
+
+    function initComplexGL(exprText = "(z-1)/(z+1)") {
+      const canvas = document.getElementById("complexPlot");
+      if (!canvas) return;
+
+      if (complexGL && complexGL.destroy) {
+        complexGL.destroy();
+        complexGL = null;
+      }
+
+      const gl = canvas.getContext("webgl2", {
+        antialias: true,
+        alpha: false,
+        preserveDrawingBuffer: false
+      });
+
+      if (!gl) {
+        throw new Error("WebGL2 não disponível");
+      }
+
+      const vertexSrc = `#version 300 es
+      in vec2 a_pos;
+      out vec2 v_uv;
+      void main() {
+        v_uv = a_pos * 0.5 + 0.5;
+        gl_Position = vec4(a_pos, 0.0, 1.0);
+      }`;
+
+      const functionBody = getComplexShaderBody(exprText);
+
+      const fragmentSrc = `#version 300 es
+      precision highp float;
+
+      in vec2 v_uv;
+      out vec4 outColor;
+
+      uniform vec2 u_resolution;
+      uniform vec2 u_center;
+      uniform float u_scale;
+      uniform float u_time;
+      uniform int u_style;
+
+      const float PI = 3.1415926535897932384626433832795;
+
+      vec2 c_add(vec2 a, vec2 b) { return a + b; }
+      vec2 c_sub(vec2 a, vec2 b) { return a - b; }
+
+      vec2 c_mul(vec2 a, vec2 b) {
+        return vec2(
+          a.x * b.x - a.y * b.y,
+          a.x * b.y + a.y * b.x
+        );
+      }
+
+      vec2 c_div(vec2 a, vec2 b) {
+        float d = dot(b, b);
+        if (d < 1e-20) return vec2(1e20, 1e20);
+        return vec2(
+          (a.x * b.x + a.y * b.y) / d,
+          (a.y * b.x - a.x * b.y) / d
+        );
+      }
+
+      vec2 c_scale(vec2 z, float s) { return vec2(z.x * s, z.y * s); }
+      vec2 c_from_real(float x) { return vec2(x, 0.0); }
+      vec2 c_conj(vec2 z) { return vec2(z.x, -z.y); }
+
+      float c_abs(vec2 z) { return length(z); }
+      float c_arg(vec2 z) { return atan(z.y, z.x); }
+      float c_abs_scalar(vec2 z) { return length(z); }
+      vec2 c_abs_vec(vec2 z) { return vec2(length(z), 0.0); }
+      vec2 c_arg_vec(vec2 z) { return vec2(atan(z.y, z.x), 0.0); }
+      vec2 c_re_vec(vec2 z) { return vec2(z.x, 0.0); }
+      vec2 c_im_vec(vec2 z) { return vec2(z.y, 0.0); }
+
+      vec2 c_inv(vec2 z) {
+        float d = dot(z, z);
+        if (d < 1e-20) return vec2(1e20, 1e20);
+        return vec2(z.x / d, -z.y / d);
+      }
+
+      vec2 c_exp(vec2 z) {
+        float ex = exp(z.x);
+        return vec2(ex * cos(z.y), ex * sin(z.y));
+      }
+
+      vec2 c_log(vec2 z) {
+        float r = length(z);
+        float a = atan(z.y, z.x);
+        return vec2(log(max(r, 1e-20)), a);
+      }
+
+      vec2 c_sqrt(vec2 z) {
+        float r = length(z);
+        float a = atan(z.y, z.x);
+        float sr = sqrt(r);
+        return vec2(sr * cos(a * 0.5), sr * sin(a * 0.5));
+      }
+
+      vec2 c_pow(vec2 a, vec2 b) {
+        float r = length(a);
+        if (r < 1e-20) return vec2(0.0, 0.0);
+        float theta = atan(a.y, a.x);
+        vec2 loga = vec2(log(r), theta);
+        return c_exp(c_mul(b, loga));
+      }
+
+      vec2 c_sin(vec2 z) {
+        return vec2(
+          sin(z.x) * cosh(z.y),
+          cos(z.x) * sinh(z.y)
+        );
+      }
+
+      vec2 c_cos(vec2 z) {
+        return vec2(
+          cos(z.x) * cosh(z.y),
+         -sin(z.x) * sinh(z.y)
+        );
+      }
+
+      vec2 c_tan(vec2 z) { return c_div(c_sin(z), c_cos(z)); }
+
+      vec2 c_sinh(vec2 z) {
+        return vec2(
+          sinh(z.x) * cos(z.y),
+          cosh(z.x) * sin(z.y)
+        );
+      }
+
+      vec2 c_cosh(vec2 z) {
+        return vec2(
+          cosh(z.x) * cos(z.y),
+          sinh(z.x) * sin(z.y)
+        );
+      }
+
+      vec2 c_tanh(vec2 z) { return c_div(c_sinh(z), c_cosh(z)); }
+
+      vec2 c_floor(vec2 z) { return vec2(floor(z.x), floor(z.y)); }
+      vec2 c_ceil(vec2 z) { return vec2(ceil(z.x), ceil(z.y)); }
+
+      vec2 c_sec(vec2 z)  { return c_div(vec2(1.0, 0.0), c_cos(z)); }
+      vec2 c_csc(vec2 z)  { return c_div(vec2(1.0, 0.0), c_sin(z)); }
+      vec2 c_cot(vec2 z)  { return c_div(vec2(1.0, 0.0), c_tan(z)); }
+      vec2 c_sech(vec2 z) { return c_div(vec2(1.0, 0.0), c_cosh(z)); }
+      vec2 c_csch(vec2 z) { return c_div(vec2(1.0, 0.0), c_sinh(z)); }
+      vec2 c_coth(vec2 z) { return c_div(vec2(1.0, 0.0), c_tanh(z)); }
+
+      vec2 c_arcsin(vec2 z) {
+        vec2 i = vec2(0.0, 1.0);
+        vec2 one = vec2(1.0, 0.0);
+        vec2 inside = c_add(c_mul(i, z), c_sqrt(c_sub(one, c_mul(z, z))));
+        vec2 L = c_log(inside);
+        return vec2(L.y, -L.x);
+      }
+
+      vec2 c_arccos(vec2 z) {
+        return c_sub(vec2(PI * 0.5, 0.0), c_arcsin(z));
+      }
+
+      vec2 c_arctan(vec2 z) {
+        vec2 i = vec2(0.0, 1.0);
+        vec2 one = vec2(1.0, 0.0);
+        vec2 a = c_log(c_sub(one, c_mul(i, z)));
+        vec2 b = c_log(c_add(one, c_mul(i, z)));
+        return c_mul(vec2(0.0, 0.5), c_sub(a, b));
+      }
+
+      vec2 c_arcsinh(vec2 z) {
+        vec2 one = vec2(1.0, 0.0);
+        return c_log(c_add(z, c_sqrt(c_add(c_mul(z, z), one))));
+      }
+
+      vec2 c_arccosh(vec2 z) {
+        vec2 one = vec2(1.0, 0.0);
+        return c_log(c_add(z, c_mul(c_sqrt(c_sub(z, one)), c_sqrt(c_add(z, one)))));
+      }
+
+      vec2 c_arctanh(vec2 z) {
+        vec2 one = vec2(1.0, 0.0);
+        return c_scale(c_log(c_div(c_add(one, z), c_sub(one, z))), 0.5);
+      }
+
+      vec2 c_arcsec(vec2 z)  { return c_arccos(c_inv(z)); }
+      vec2 c_arccsc(vec2 z)  { return c_arcsin(c_inv(z)); }
+      vec2 c_arccot(vec2 z)  { return c_arctan(c_inv(z)); }
+      vec2 c_arcsech(vec2 z) { return c_arccosh(c_inv(z)); }
+      vec2 c_arccsch(vec2 z) { return c_arcsinh(c_inv(z)); }
+      vec2 c_arccoth(vec2 z) { return c_arctanh(c_inv(z)); }
+
+      vec2 c_gamma(vec2 z) {
+        const float g = 7.0;
+
+        vec2 p0 = vec2(0.99999999999980993, 0.0);
+        vec2 p1 = vec2(676.5203681218851, 0.0);
+        vec2 p2 = vec2(-1259.1392167224028, 0.0);
+        vec2 p3 = vec2(771.32342877765313, 0.0);
+        vec2 p4 = vec2(-176.61502916214059, 0.0);
+        vec2 p5 = vec2(12.507343278686905, 0.0);
+        vec2 p6 = vec2(-0.13857109526572012, 0.0);
+        vec2 p7 = vec2(9.9843695780195716e-6, 0.0);
+        vec2 p8 = vec2(1.5056327351493116e-7, 0.0);
+
+        vec2 one = vec2(1.0, 0.0);
+        vec2 pi = vec2(PI, 0.0);
+
+        vec2 zz = z;
+        bool reflectMode = (zz.x < 0.5);
+
+        if (reflectMode) {
+          zz = c_sub(one, zz);
+        }
+
+        zz = c_sub(zz, one);
+
+        vec2 x = p0;
+        x = c_add(x, c_div(p1, c_add(zz, vec2(1.0, 0.0))));
+        x = c_add(x, c_div(p2, c_add(zz, vec2(2.0, 0.0))));
+        x = c_add(x, c_div(p3, c_add(zz, vec2(3.0, 0.0))));
+        x = c_add(x, c_div(p4, c_add(zz, vec2(4.0, 0.0))));
+        x = c_add(x, c_div(p5, c_add(zz, vec2(5.0, 0.0))));
+        x = c_add(x, c_div(p6, c_add(zz, vec2(6.0, 0.0))));
+        x = c_add(x, c_div(p7, c_add(zz, vec2(7.0, 0.0))));
+        x = c_add(x, c_div(p8, c_add(zz, vec2(8.0, 0.0))));
+
+        vec2 t = c_add(zz, vec2(g + 0.5, 0.0));
+        vec2 gammaMain = c_mul(
+          vec2(sqrt(2.0 * PI), 0.0),
+          c_mul(
+            c_pow(t, c_add(zz, vec2(0.5, 0.0))),
+            c_mul(c_exp(c_scale(t, -1.0)), x)
+          )
+        );
+
+        if (reflectMode) {
+          vec2 sinTerm = c_sin(c_mul(pi, z));
+          return c_div(pi, c_mul(sinTerm, gammaMain));
+        }
+
+        return gammaMain;
+      }
+
+      vec2 c_zeta(vec2 z) {
+        vec2 sum = vec2(0.0, 0.0);
+        for (int n = 1; n <= 40; ++n) {
+          vec2 term = c_pow(vec2(float(n), 0.0), c_scale(z, -1.0));
+          sum = c_add(sum, term);
+        }
+        return sum;
+      }
+
+      vec2 c_phi(vec2 z) { return vec2((1.0 + sqrt(5.0)) * 0.5, 0.0); }
+      vec2 c_theta(vec2 z) { return vec2(c_arg(z), 0.0); }
+      vec2 c_joukowsky(vec2 z) { return c_add(z, c_inv(z)); }
+      vec2 c_disk(vec2 z) { return vec2(length(z) <= 1.0 ? 1.0 : 0.0, 0.0); }
+
+      vec2 c_mandelbrot(vec2 c) {
+        vec2 z = vec2(0.0, 0.0);
+        vec2 lastZ = z;
+
+        const int maxIt = 1000;
+        int it = maxIt;
+
+        for (int i = 0; i < maxIt; ++i) {
+          lastZ = z;
+          z = c_add(c_mul(z, z), c);
+
+          if (dot(z, z) > 256.0) {
+            it = i + 1;
+            break;
+          }
+        }
+
+        if (it >= maxIt) {
+          return vec2(-1.0, 0.0);
+        }
+
+        float mag = length(z);
+        float smoothIter = float(it) + 1.0 - log2(log2(max(mag, 1.000001)));
+        return vec2(smoothIter / float(maxIt), length(lastZ));
+      }
+
+      vec2 c_map(vec2 z) { return z; }
+      vec2 c_transform(vec2 z) { return z; }
+
+      vec3 hsv2rgb(vec3 c) {
+        vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);
+        vec3 rgb = clamp(p - 1.0, 0.0, 1.0);
+        return c.z * mix(vec3(1.0), rgb, c.y);
+      }
+
+      vec2 f(vec2 z) {
+        ${functionBody}
+      }
+
+      float gridLine(float x, float freq, float width) {
+        float v = abs(fract(x * freq) - 0.5);
+        return smoothstep(width, 0.0, v);
+      }
+
+      vec3 styleClassic(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
+        float modLinesB = 0.5 + 0.5 * cos(20.0 * lr);
+        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
+
+        float ringMask = smoothstep(0.86, 0.995, modLinesA);
+        float ringMask2 = smoothstep(0.92, 0.999, modLinesB);
+        float phaseMask = smoothstep(0.90, 0.995, phaseLines);
+        float glow = max(max(ringMask, ringMask2), phaseMask);
+
+        float value = 0.12 + 0.88 * (1.0 - 1.0 / (1.0 + lr));
+        vec3 base = hsv2rgb(vec3(hue, 0.96, value));
+        vec3 lineColor = hsv2rgb(vec3(hue, 0.55, 1.0));
+        return mix(base, lineColor, 0.85 * glow);
+      }
+
+      vec3 styleDark(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
+        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
+        float glow = max(
+          smoothstep(0.86, 0.995, modLinesA),
+          smoothstep(0.90, 0.995, phaseLines)
+        );
+
+        float value = 0.05 + 0.70 * (1.0 - 1.0 / (1.0 + lr));
+        vec3 base = hsv2rgb(vec3(hue, 0.85, value));
+        return mix(base, vec3(1.0), 0.18 * glow);
+      }
+
+      vec3 styleNeon(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float rings = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(20.0 * lr));
+        float spokes = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
+
+        vec3 base = hsv2rgb(vec3(hue, 1.0, 0.2 + 0.8 * (1.0 - 1.0 / (1.0 + lr))));
+        vec3 glow = hsv2rgb(vec3(fract(hue + 0.08), 0.2, 1.0));
+        return mix(base, glow, max(rings, spokes) * 0.95);
+      }
+
+      vec3 stylePastel(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+        float value = 0.55 + 0.35 * sin(lr * 2.0);
+
+        vec3 base = hsv2rgb(vec3(hue, 0.45, clamp(value, 0.0, 1.0)));
+        float glow = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
+        return mix(base, vec3(1.0), 0.25 * glow);
+      }
+
+      vec3 stylePhaseGrid(vec2 w) {
+        float a = c_arg(w);
+        float r = c_abs(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        vec3 base = hsv2rgb(vec3(hue, 0.90, 0.10 + 0.85 * (1.0 - 1.0 / (1.0 + log(1.0 + r)))));
+        float mesh = max(
+          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * a)),
+          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * log(1.0 + r)))
+        );
+        return mix(base, vec3(1.0), 0.75 * mesh);
+      }
+
+      vec3 styleChecker(vec2 w) {
+        float u = log(1.0 + c_abs(w)) * 8.0;
+        float v = (c_arg(w) + PI) / (2.0 * PI) * 24.0;
+        float cell = mod(floor(u) + floor(v), 2.0);
+        return mix(vec3(0.03), vec3(0.96), cell);
+      }
+
+      vec3 styleRedBlueGrid(vec2 w) {
+        float re = w.x;
+        float im = w.y;
+        float gx = gridLine(re, 1.6, 0.035);
+        float gy = gridLine(im, 1.6, 0.035);
+        vec3 bg = vec3(0.92);
+        bg = mix(bg, vec3(1.0, 0.1, 0.1), gx);
+        bg = mix(bg, vec3(0.1, 0.2, 1.0), gy);
+        return bg;
+      }
+
+      vec3 styleTiles(vec2 w) {
+        vec2 p = w * 2.5;
+        vec2 g = fract(p) - 0.5;
+        vec2 id = floor(p);
+        float mask = step(0.0, sin(id.x * 1.2) * sin(id.y * 1.2));
+        float box = smoothstep(0.48, 0.42, max(abs(g.x), abs(g.y)));
+        vec3 c1 = vec3(0.82, 0.78, 0.96);
+        vec3 c2 = vec3(0.60, 0.00, 0.62);
+        vec3 c3 = vec3(0.26, 0.00, 0.28);
+        vec3 base = mix(c1, c2, mask);
+        return mix(c3, base, box);
+      }
+
+      vec3 styleBubbles(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+
+        vec2 p = w * 3.0;
+        vec2 gv = fract(p) - 0.5;
+        float d = length(gv);
+        float circle = smoothstep(0.34, 0.30, d) - smoothstep(0.30, 0.26, d);
+
+        vec3 bg = vec3(0.01, 0.01, 0.03);
+        vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
+        bg += col * circle * 1.5;
+
+        float rings = 0.5 + 0.5 * cos(10.0 * log(1.0 + r));
+        bg += 0.12 * hsv2rgb(vec3(hue, 1.0, 1.0)) * rings;
+
+        return clamp(bg, 0.0, 1.0);
+      }
+
+      vec3 styleSmoothBands(vec2 w) {
+        float a = c_arg(w);
+        float r = c_abs(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float bands = floor(fract(hue + log(1.0 + r) * 0.25) * 18.0) / 18.0;
+        return hsv2rgb(vec3(bands, 0.95, 0.95));
+      }
+
+      vec3 styleFractal(vec2 w) {
+        if (w.x < 0.0) return vec3(0.0);
+
+        float t = clamp(w.x, 0.0, 1.0);
+        float aux = log(1.0 + max(w.y, 0.0));
+
+        float hue = fract(0.95 + 8.0 * t + 0.08 * aux);
+        float sat = 0.75 + 0.25 * sin(10.0 * t + aux);
+        float val = 0.15 + 0.85 * smoothstep(0.0, 1.0, pow(t, 0.65));
+
+        vec3 base = hsv2rgb(vec3(hue, sat, val));
+        float glow = 0.5 + 0.5 * cos(40.0 * t - 2.0 * aux);
+        base += 0.12 * glow * vec3(1.0, 0.9, 0.7);
+
+        return clamp(base, 0.0, 1.0);
+      }
+
+
+      vec3 domainColor(vec2 w) {
+        if (u_style == 0) return styleClassic(w);
+        if (u_style == 1) return styleDark(w);
+        if (u_style == 2) return styleNeon(w);
+        if (u_style == 3) return stylePastel(w);
+        if (u_style == 4) return stylePhaseGrid(w);
+        if (u_style == 5) return styleChecker(w);
+        if (u_style == 6) return styleRedBlueGrid(w);
+        if (u_style == 7) return styleTiles(w);
+        if (u_style == 8) return styleBubbles(w);
+        if (u_style == 9) return styleSmoothBands(w);
+        if (u_style == 10) return styleFractal(w);
+        return styleClassic(w);
+      }
+
+      void main() {
+        vec2 p = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+        p.x *= u_resolution.x / u_resolution.y;
+
+        vec2 z = u_center + p * u_scale;
+        vec2 w = f(z);
+
+        if (abs(w.x) > 1e19 || abs(w.y) > 1e19 || isnan(w.x) || isnan(w.y)) {
+          outColor = vec4(0.02, 0.02, 0.02, 1.0);
+          return;
+        }
+
+        vec3 col = domainColor(w);
+
+        float axisX = exp(-80.0 * abs(z.y));
+        float axisY = exp(-80.0 * abs(z.x));
+        col += 0.05 * vec3(axisX + axisY);
+
+        outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+      }`;
+
+      function compile(type, src) {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+          const log = gl.getShaderInfoLog(sh);
+          gl.deleteShader(sh);
+          throw new Error(log);
+        }
+        return sh;
+      }
+
+      const vs = compile(gl.VERTEX_SHADER, vertexSrc);
+      const fs = compile(gl.FRAGMENT_SHADER, fragmentSrc);
+
+      const program = gl.createProgram();
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const log = gl.getProgramInfoLog(program);
+        throw new Error(log);
+      }
+
+      const quad = new Float32Array([
+        -1, -1,
+         1, -1,
+        -1,  1,
+        -1,  1,
+         1, -1,
+         1,  1
+      ]);
+
+      const vao = gl.createVertexArray();
+      const vbo = gl.createBuffer();
+
+      gl.bindVertexArray(vao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+
+      const locPos = gl.getAttribLocation(program, "a_pos");
+      gl.enableVertexAttribArray(locPos);
+      gl.vertexAttribPointer(locPos, 2, gl.FLOAT, false, 0, 0);
+
+      const uResolution = gl.getUniformLocation(program, "u_resolution");
+      const uCenter = gl.getUniformLocation(program, "u_center");
+      const uScale = gl.getUniformLocation(program, "u_scale");
+      const uTime = gl.getUniformLocation(program, "u_time");
+      const uStyle = gl.getUniformLocation(program, "u_style");
+
+      const state = {
+        gl,
+        canvas,
+        program,
+        vao,
+        vbo,
+        vs,
+        fs,
+        style: complexColorStyle,
+        centerX: 0.0,
+        centerY: 0.0,
+        scale: 4.0,
+        dragging: false,
+        lastX: 0,
+        lastY: 0,
+        exprText,
+        time0: performance.now()
+      };
+
+      let complexQuality = /mandelbrot/i.test(exprText) ? 8.5 : 4.0;
+
+      function getComplexDpr() {
+        const baseDpr = Math.max(1, window.devicePixelRatio || 1);
+        return Math.min(8.0, baseDpr * complexQuality);
+      }
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = getComplexDpr();
+        const w = Math.max(1, Math.floor(rect.width * dpr));
+        const h = Math.max(1, Math.floor(rect.height * dpr));
+
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+
+        gl.viewport(0, 0, w, h);
+      }
+
+      function screenToComplex(px, py) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const nx = (px / w) * 2.0 - 1.0;
+        const ny = 1.0 - (py / h) * 2.0;
+        const aspect = w / h;
+
+        return {
+          x: state.centerX + nx * state.scale * aspect,
+          y: state.centerY + ny * state.scale
+        };
+      }
+
+      function updateHud(mouseX = null, mouseY = null) {
+        const exprEl = document.getElementById("complexExpr");
+        const mouseEl = document.getElementById("complexMouse");
+        const viewEl = document.getElementById("complexView");
+
+        if (exprEl) {
+          exprEl.textContent = `f(z) = ${state.exprText}`;
+        }
+
+        if (mouseEl && mouseX !== null && mouseY !== null) {
+          const z = screenToComplex(mouseX, mouseY);
+          mouseEl.textContent = `z = ${formatComplex(z.x, z.y)}`;
+        }
+
+        if (viewEl) {
+          viewEl.textContent =
+            `centro: ${formatComplex(state.centerX, state.centerY)} | escala: ${state.scale.toFixed(6)} | qualidade: ${complexQuality.toFixed(2)}x`;
+        }
+      }
+
+      function render(mouseX = null, mouseY = null) {
+        resize();
+
+        gl.useProgram(program);
+        gl.bindVertexArray(vao);
+
+        const styleMap = {
+          classic: 0,
+          dark: 1,
+          neon: 2,
+          pastel: 3,
+          phasegrid: 4,
+          checker: 5,
+          redblue: 6,
+          tiles: 7,
+          bubbles: 8,
+          smoothbands: 9,
+          fractal: 10
+        };
+
+        gl.uniform1i(uStyle, styleMap[state.style] ?? 0);
+        gl.uniform2f(uResolution, canvas.width, canvas.height);
+        gl.uniform2f(uCenter, state.centerX, state.centerY);
+        gl.uniform1f(uScale, state.scale);
+        gl.uniform1f(uTime, (performance.now() - state.time0) * 0.001);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        updateHud(mouseX, mouseY);
+      }
+
+      function onMouseDown(e) {
+        if (e.button !== 0) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const dpr = getComplexDpr();
+
+        state.dragging = true;
+        state.lastX = (e.clientX - rect.left) * dpr;
+        state.lastY = (e.clientY - rect.top) * dpr;
+        canvas.style.cursor = "grabbing";
+      }
+
+      function onMouseMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = getComplexDpr();
+        const x = (e.clientX - rect.left) * dpr;
+        const y = (e.clientY - rect.top) * dpr;
+
+        if (!state.dragging) {
+          updateHud(x, y);
+          return;
+        }
+
+        const dx = x - state.lastX;
+        const dy = y - state.lastY;
+        const aspect = canvas.width / canvas.height;
+
+        state.centerX -= (dx / canvas.width) * 2.0 * state.scale * aspect;
+        state.centerY += (dy / canvas.height) * 2.0 * state.scale;
+
+        state.lastX = x;
+        state.lastY = y;
+        render(x, y);
+      }
+
+      function onMouseUp() {
+        state.dragging = false;
+        canvas.style.cursor = "crosshair";
+      }
+
+      function onWheel(e) {
+        e.preventDefault();
+
+        const rect = canvas.getBoundingClientRect();
+        const dpr = getComplexDpr();
+        const mx = (e.clientX - rect.left) * dpr;
+        const my = (e.clientY - rect.top) * dpr;
+
+        const before = screenToComplex(mx, my);
+        const factor = e.deltaY < 0 ? 0.88 : 1.14;
+
+        state.scale *= factor;
+
+        const after = screenToComplex(mx, my);
+        state.centerX += before.x - after.x;
+        state.centerY += before.y - after.y;
+
+        render(mx, my);
+      }
+
+      function onDblClick() {
+        state.centerX = 0.0;
+        state.centerY = 0.0;
+        state.scale = 4.0;
+        render();
+      }
+
+      function onResize() {
+        render();
+      }
+
+      canvas.addEventListener("mousedown", onMouseDown);
+      canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("wheel", onWheel, { passive: false });
+      canvas.addEventListener("dblclick", onDblClick);
+      window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("resize", onResize);
+
+      complexGL = {
+        render,
+        resetView() {
+          state.centerX = 0.0;
+          state.centerY = 0.0;
+          state.scale = 4.0;
+          render();
+        },
+        setExprText(txt) {
+          state.exprText = txt;
+          render();
+        },
+        setColorStyle(style) {
+          state.style = style;
+          render();
+        },
+        setQuality(q) {
+          complexQuality = Math.max(1.0, Math.min(8.0, q));
+          render();
+        },
+        destroy() {
+          canvas.removeEventListener("mousedown", onMouseDown);
+          canvas.removeEventListener("mousemove", onMouseMove);
+          canvas.removeEventListener("wheel", onWheel);
+          canvas.removeEventListener("dblclick", onDblClick);
+          window.removeEventListener("mouseup", onMouseUp);
+          window.removeEventListener("resize", onResize);
+
+          gl.deleteBuffer(vbo);
+          gl.deleteVertexArray(vao);
+          gl.deleteProgram(program);
+          gl.deleteShader(vs);
+          gl.deleteShader(fs);
+        }
+      };
+
+      currentPlotData = { type: 'complex' };
+      render();
+    }
+
+    function drawContourPlot(contourData) {
+      const container = document.getElementById('contourPlot');
+
+      if (!contourData.x || !contourData.y || !contourData.z) {
+        throw new Error("Dados de contorno em formato inválido");
+      }
+
+      const trace = {
+        z: contourData.z,
+        x: contourData.x,
+        y: contourData.y,
+        type: 'contour',
+        colorscale: 'Viridis',
+        contours: { coloring: 'heatmap' },
+        colorbar: { title: 'z = f(x,y)' }
+      };
+
+      const layout = {
+        title: 'contour of : ' + document.getElementById('expr').value,
+        paper_bgcolor: '#1e1e1e',
+        plot_bgcolor: '#1e1e1e',
+        font: { color: '#e0e0e0' },
+        xaxis: { title: 'x', gridcolor: '#444' },
+        yaxis: { title: 'y', gridcolor: '#444' }
+      };
+
+      if (currentContourPlot) Plotly.purge(container);
+      Plotly.newPlot(container, [trace], layout, { responsive: true });
+      currentContourPlot = true;
+    }
+
+    function drawSurface2DFromData(surfaceData) {
+      clearScene();
+      if (showGrid) addGrid();
+      if (showAxes) addAxes();
+
+      const geometry = new THREE.BufferGeometry();
+      const vertices = [];
+      const indices = [];
+
+      const xArray = surfaceData.x;
+      const yArray = surfaceData.y;
+      const zMatrix = surfaceData.z;
+
+      for (let i = 0; i < yArray.length; i++) {
+        for (let j = 0; j < xArray.length; j++) {
+          vertices.push(xArray[j], zMatrix[i][j], yArray[i]);
+        }
+      }
+
+      for (let i = 0; i < yArray.length - 1; i++) {
+        for (let j = 0; j < xArray.length - 1; j++) {
+          const a = i * xArray.length + j;
+          const b = i * xArray.length + j + 1;
+          const c = (i + 1) * xArray.length + j;
+          const d = (i + 1) * xArray.length + j + 1;
+
+          indices.push(a, b, c);
+          indices.push(b, d, c);
+        }
+      }
+
+      geometry.setIndex(indices);
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.computeVertexNormals();
+
+      createMesh(geometry);
+      currentPlotData = { type: '3d', surfaceType: '2d', points: surfaceData };
+    }
+
+    function drawRevolution(points3D, axis) {
+      clearScene();
+      if (showGrid) addGrid();
+      if (showAxes) addAxes();
+
+      const rings = organizePointsIntoRings(points3D, axis);
+      if (rings.length < 2) {
+        createPointCloud(points3D);
+        return;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      const vertices = [];
+      const indices = [];
+
+      const pointsPerRing = rings[0].length;
+      const numRings = rings.length;
+
+      rings.forEach(ring => {
+        ring.forEach(point => {
+          vertices.push(point[0], point[1], point[2]);
+        });
+      });
+
+      for (let ringIndex = 0; ringIndex < numRings - 1; ringIndex++) {
+        for (let pointIndex = 0; pointIndex < pointsPerRing; pointIndex++) {
+          const nextPointIndex = (pointIndex + 1) % pointsPerRing;
+
+          indices.push(
+            ringIndex * pointsPerRing + pointIndex,
+            ringIndex * pointsPerRing + nextPointIndex,
+            (ringIndex + 1) * pointsPerRing + pointIndex
+          );
+
+          indices.push(
+            ringIndex * pointsPerRing + nextPointIndex,
+            (ringIndex + 1) * pointsPerRing + nextPointIndex,
+            (ringIndex + 1) * pointsPerRing + pointIndex
+          );
+        }
+      }
+
+      geometry.setIndex(indices);
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.computeVertexNormals();
+
+      createMesh(geometry);
+      currentPlotData = { type: '3d', axis, points: points3D };
+    }
+
+    function drawSolidFromData(solidData) {
+      clearScene();
+      if (showGrid) addGrid();
+      if (showAxes) addAxes();
+
+      const geometry = new THREE.BufferGeometry();
+      const vertices = [];
+
+      solidData.z.forEach((row, i) => {
+        row.forEach((z, j) => {
+          vertices.push(solidData.x[j], z, solidData.y[i]);
+        });
+      });
+
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+      createMesh(geometry);
+      currentPlotData = { type: '3d', points: solidData };
+    }
+
+    function createMesh(geometry) {
+      const baseColor = getColorFromPicker();
+
+      let material;
+      switch (currentMaterialType) {
+        case 'plastic':
+          material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            shininess: 30,
+            wireframe: showWireframe,
+            side: THREE.DoubleSide
+          });
+          break;
+        case 'metal':
+          material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            shininess: 100,
+            specular: 0x555555,
+            wireframe: showWireframe,
+            side: THREE.DoubleSide
+          });
+          break;
+        case 'glass':
+          material = new THREE.MeshPhongMaterial({
+            color: baseColor,
+            transparent: true,
+            opacity: 0.7,
+            shininess: 90,
+            specular: 0xffffff,
+            wireframe: showWireframe,
+            side: THREE.DoubleSide
+          });
+          break;
+      }
+
+      currentMesh = new THREE.Mesh(geometry, material);
+      currentMesh.castShadow = true;
+      currentMesh.receiveShadow = true;
+
+      scene.add(currentMesh);
+      currentObjects.push(currentMesh);
+
+      updateColorMode();
+      document.querySelector('[data-tab="3d"]').click();
+    }
+
+    function organizePointsIntoRings(points3D, axis) {
+      const rings = [];
+      const groups = {};
+
+      points3D.forEach(point => {
+        const key = axis === 'x' ? point[0].toFixed(3) : point[1].toFixed(3);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(point);
+      });
+
+      const sortedKeys = Object.keys(groups).sort((a, b) => parseFloat(a) - parseFloat(b));
+
+      sortedKeys.forEach(key => {
+        const ringPoints = groups[key];
+        const center = axis === 'x'
+          ? { x: parseFloat(key), y: 0, z: 0 }
+          : { x: 0, y: parseFloat(key), z: 0 };
+
+        ringPoints.forEach(point => {
+          const dx = point[0] - center.x;
+          const dy = point[1] - center.y;
+          const dz = point[2] - center.z;
+          point.angle = axis === 'x' ? Math.atan2(dz, dy) : Math.atan2(dz, dx);
+        });
+
+        ringPoints.sort((a, b) => a.angle - b.angle);
+        rings.push(ringPoints);
+      });
+
+      return rings;
+    }
+
+    function createPointCloud(points3D) {
+      const geometry = new THREE.BufferGeometry();
+      const vertices = [];
+
+      points3D.forEach(pt => {
+        vertices.push(pt[0], pt[1], pt[2]);
+      });
+
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+      const material = new THREE.PointsMaterial({
+        color: getColorFromPicker(),
+        size: 0.05,
+        sizeAttenuation: true
+      });
+
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
+      currentObjects.push(points);
+    }
+
+    function renderAnalysis(data, target) {
+      if (!target) return;
+
+      let html = `<div class="analysis-title">📊 Análise da Função</div>`;
+
+      for (let key in data) {
+        let val = data[key];
+        if (typeof val === "boolean") val = val ? "✅ Sim" : "❌ Não";
+        else if (typeof val === "number") val = isFinite(val) ? val.toFixed(6) : "indefinido";
+        else if (val === null) val = "indefinido";
+
+        html += `
+          <div class="analysis-item">
+            <div class="analysis-label">${key}:</div>
+            <div class="analysis-value">${val}</div>
+          </div>
+        `;
+      }
+
+      target.innerHTML = html;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      initTabs();
+      initPlotControls();
+      renderFunctionList();
+      initComplexStyleControls();
+
+      const exprInput = document.getElementById('expr');
+      const runBtn = document.getElementById('runBtn');
+
+      if (exprInput) {
+        exprInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter') runRepl();
+        });
+      }
+
+      if (runBtn) {
+        runBtn.addEventListener('click', runRepl);
+      }
+
+      Descartes().then(mod => {
+        DescartesInstance = mod;
+
+        console.log("Módulo carregado");
+        console.log("complexToGLSL existe?", typeof mod.complexToGLSL);
+        console.log("repl existe?", typeof mod.repl);
+        console.log("Exports disponíveis:", Object.keys(mod));
+
+        const history = document.getElementById('history');
+        if (history) {
+          history.innerHTML += `
+            <div class="history-entry">
+              <div class="input-expr">~[math]> Sistema inicializado</div>
+              <div class="output-result">Módulo WASM carregado com sucesso</div>
+            </div>
+          `;
+          history.scrollTop = history.scrollHeight;
+        }
+
+        if (typeof mod.complexToGLSL === "function") {
+          try {
+            initComplexGL("(z-1)/(z+1)");
+          } catch (e) {
+            console.error("Erro ao iniciar complex GL:", e);
+          }
+        } else {
+          console.error("complexToGLSL não encontrado nos exports do WASM");
+        }
+      }).catch(err => {
+        console.error("Falha ao carregar o módulo WASM:", err);
+      });
+    });
+
+    function runRepl() {
+      const exprRaw = document.getElementById('expr').value.trim();
+      if (!DescartesInstance || !exprRaw) return;
+
+      const history = document.getElementById('history');
+      const analysisBox = document.getElementById('analysis');
+
+      if (exprRaw === "clear2d") {
+        plot2DSeries = [];
+        renderFunctionList();
+        Plotly.purge(document.getElementById('plot2d'));
+        if (history) {
+          history.innerHTML += `<div class="output-result">Gráfico 2D limpo</div>`;
+          history.scrollTop = history.scrollHeight;
+        }
+        return;
+      }
+
+      const adjustedDomain = adjustDomainForExpression(exprRaw);
+      analyzeExpression(exprRaw);
+
+      if (history) {
+        history.innerHTML += `
+          <div class="history-entry">
+            <div class="input-expr">~[math]> ${exprRaw}</div>
+          </div>
+        `;
+        history.scrollTop = history.scrollHeight;
+      }
+
+      if (exprRaw.startsWith("domaincolor ") || exprRaw.startsWith("complexplot ")) {
+        try {
+          const prefix = exprRaw.startsWith("domaincolor ") ? "domaincolor " : "complexplot ";
+          const expr = exprRaw.substring(prefix.length).trim();
+
+          if (/mandelbrot/i.test(expr)) {
+            complexColorStyle = 'fractal';
+          }
+
+          const wrap = document.getElementById('complexStyleControls');
+          if (wrap) {
+            wrap.querySelectorAll('[data-cstyle]').forEach(x => {
+              x.classList.toggle('active', x.getAttribute('data-cstyle') === complexColorStyle);
+            });
+          }
+
+          initComplexGL(expr);
+
+          if (/mandelbrot/i.test(expr) && complexGL && complexGL.setQuality) {
+            complexGL.setQuality(4.0);
+          }
+
+          currentPlotData = { type: 'complex' };
+          document.querySelector('[data-tab="complex"]').click();
+
+          if (history) {
+            history.innerHTML += `<div class="output-result">Domain coloring WebGL renderizado</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+
+          renderAnalysis({
+            expr: exprRaw,
+            tipo: "Função complexa (GPU)",
+            saída: "fragment shader"
+          }, analysisBox);
+        } catch (e) {
+          if (history) {
+            history.innerHTML += `<div class="output-result error">Erro no gráfico complexo: ${e.message}</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+          console.error("Erro complexo:", e);
+        }
+        return;
+      }
+
+      if (exprRaw.startsWith("contour ")) {
+        const expr = exprRaw.substring(8).trim();
+        try {
+          const contourDataStr = DescartesInstance.contourMap(expr, adjustedDomain, adjustedDomain, 50);
+          const contourData = JSON.parse(contourDataStr);
+
+          drawContourPlot(contourData);
+          document.querySelector('[data-tab="contour"]').click();
+
+          if (history) {
+            history.innerHTML += `<div class="output-result">Mapa de contorno gerado</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+        } catch (e) {
+          if (history) {
+            history.innerHTML += `<div class="output-result error">Erro no mapa de contorno: ${e.message}</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+          console.error("Erro detalhado:", e);
+        }
+        return;
+      }
+
+      if (exprRaw.startsWith("surface ")) {
+        const expr = exprRaw.substring(8).trim();
+        try {
+          const domainObj = { x: adjustedDomain.min, y: adjustedDomain.max };
+          const surfaceDataStr = DescartesInstance.plot3D(expr, domainObj, 30);
+          const surfaceData = JSON.parse(surfaceDataStr);
+
+          drawSurface2DFromData(surfaceData);
+
+          if (history) {
+            history.innerHTML += `<div class="output-result">Superfície 2D gerada</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+        } catch (e) {
+          if (history) {
+            history.innerHTML += `<div class="output-result error">Erro na superfície: ${e.message}</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+        }
+        return;
+      }
+
+      if (exprRaw.startsWith("revolution")) {
+        const match = exprRaw.match(/^revolution\s+(.+?)\s+around\s+(x|y)/);
+        if (!match) {
+          if (history) {
+            history.innerHTML += `<div class="output-result error">Erro de sintaxe no comando de revolução</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+          return;
+        }
+
+        const expr = match[1].trim();
+        const axis = match[2].trim();
+
+        try {
+          const domain3D = { x: adjustedDomain.min, y: adjustedDomain.max };
+          const rawPoints = axis === "x"
+            ? DescartesInstance.revolution3D_str(expr, domain3D)
+            : DescartesInstance.revolution3D_Y_str(expr, domain3D);
+
+          const points3D = JSON.parse(rawPoints);
+          drawRevolution(points3D, axis);
+
+          if (history) {
+            history.innerHTML += `<div class="output-result">Revolução gerada em torno do eixo ${axis.toUpperCase()}</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+        } catch (e) {
+          if (history) {
+            history.innerHTML += `<div class="output-result error">Erro: ${e.message}</div>`;
+            history.scrollTop = history.scrollHeight;
+          }
+        }
+        return;
+      }
+
+      const raw = DescartesInstance.repl(exprRaw);
+      let parsed = null;
+
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        if (history) {
+          history.innerHTML += `<div class="output-result">${raw.trim() || "(indefinido)"}</div>`;
+          history.scrollTop = history.scrollHeight;
+        }
+        return;
+      }
+
+      if (typeof parsed !== "object" || parsed === null) {
+        if (history) {
+          history.innerHTML += `<div class="output-result">${String(parsed)}</div>`;
+          history.scrollTop = history.scrollHeight;
+        }
+        return;
+      }
+
+      if (parsed.contour) {
+        drawContourPlot(parsed.contour);
+        document.querySelector('[data-tab="contour"]').click();
+        if (history) {
+          history.innerHTML += `<div class="output-result">Mapa de contorno renderizado</div>`;
+          history.scrollTop = history.scrollHeight;
+        }
+        return;
+      }
+
+      if (parsed.plot) {
+        let { plot: plotData, analysis } = parsed;
+        analysis = analysis || {};
+        analysis.expr = exprRaw;
+
+        plotData = plotData.map(([x, y]) => [x, sanitize(y)]);
+        for (let key in analysis) analysis[key] = sanitize(analysis[key]);
+
+        add2DSeries(
+          exprRaw,
+          plotData,
+          analysis.domain || [adjustedDomain.min, adjustedDomain.max]
+        );
+
+        currentPlotData = {
+          type: '2d',
+          points: plotData,
+          domain: analysis.domain || [adjustedDomain.min, adjustedDomain.max]
+        };
+
+        renderAnalysis(analysis, analysisBox);
+        document.querySelector('[data-tab="2d"]').click();
+
+        if (history) {
+          history.innerHTML += `<div class="output-result">Função adicionada ao gráfico 2D</div>`;
+          history.scrollTop = history.scrollHeight;
+        }
+        return;
+      }
+
+      if (history) {
+        history.innerHTML += `<div class="output-result">${raw.trim() || "(indefinido)"}</div>`;
+        history.scrollTop = history.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
