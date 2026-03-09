@@ -212,7 +212,7 @@ domaincolor mandelbrot(z)
 * **Three.js**
 * **Plotly**
 * **WebGL2**
-
+* **Qt**
 ---
 
  
