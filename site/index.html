@@ -2,27 +2,27 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>🔥 Wolfram Beta 3000 🔥</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔥 Wolfram Beta 3000 – Three.js Complex Fractals</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
   <style>
     :root {
-      --primary: #7549dd;
-      --dark-bg: #121212;
-      --card-bg: #1e1e1e;
-      --text: #e0e0e0;
-      --accent: #4a9eff;
+      --primary: #b380ff;
+      --dark-bg: #0c0f1c;
+      --card-bg: #1a1e2f;
+      --text: #e2e8f0;
+      --accent: #5f9ef0;
+      --muted: #94a3b8;
+      --danger: #ff8f8f;
+      --success: #9dffb1;
+      --warning: #ffd28a;
+      --neon-glow: 0 0 12px #6b3aff;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
       background: var(--dark-bg);
       color: var(--text);
       display: flex;
@@ -30,25 +30,20 @@
       height: 100vh;
       overflow: hidden;
     }
-
     header {
-      background: linear-gradient(135deg, #1a1a1a, #2d1a1a);
+      background: linear-gradient(145deg, #141b29, #1e0f2e);
       color: #fff;
-      padding: 15px;
-      text-align: center;
+      padding: 14px 20px;
       font-size: 1.6rem;
-      font-family: 'Courier New', monospace;
+      font-family: 'Fira Code', monospace;
       border-bottom: 2px solid var(--primary);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      position: relative;
+      box-shadow: var(--neon-glow);
       z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-
-    .logo {
-      color: var(--primary);
-      text-shadow: 0 0 10px rgba(255, 107, 53, 0.7);
-    }
-
+    .logo { color: #c49bff; text-shadow: 0 0 15px #a55cff; }
     main {
       display: flex;
       flex: 1;
@@ -56,1112 +51,1092 @@
       gap: 10px;
       padding: 10px;
     }
-
     #outputArea {
-      order: -1;
-      flex: 0 0 320px;
+      flex: 0 0 340px;
       display: flex;
       flex-direction: column;
       background: var(--card-bg);
-      border-radius: 10px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+      border: 1px solid #2e3a5a;
     }
-
     #plotArea {
       flex: 1;
-      background: var(--card-bg);
-      border-radius: 10px;
+      background: #070b14;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 25px #00000080;
       position: relative;
+      border: 1px solid #3c2a5a;
+      min-width: 0;
     }
-
-    #plot3d,
-    #plot2d,
-    #contourPlot {
+    #plot3d, #plot2d, #contourPlot, #complexWrapper {
       width: 100%;
-      height: 100%;
+      height: calc(100% - 49px);
     }
-
-    #plot2d,
-    #contourPlot {
-      display: none;
-    }
-
+    #plot2d, #contourPlot, #complexWrapper { display: none; }
     #functionList {
       min-height: 120px;
       max-height: 240px;
       overflow-y: auto;
-      background: #171717;
-      border-bottom: 1px solid #333;
+      background: #0f1322;
+      border-bottom: 1px solid #334155;
       padding: 10px;
     }
-
     .function-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 8px 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      background: #222;
-      border: 1px solid #303030;
+      border-radius: 16px;
+      background: #1f2937;
+      margin-bottom: 6px;
+      border: 1px solid #3b4a5e;
     }
-
     .function-dot {
       width: 12px;
       height: 12px;
-      border-radius: 999px;
+      border-radius: 50%;
       flex: 0 0 12px;
     }
-
     .function-name {
       flex: 1;
-      font-family: Consolas, monospace;
-      color: #ddd;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
     .function-actions {
       display: flex;
       gap: 6px;
     }
-
     .function-btn {
+      background: #2d3b4f;
       border: none;
-      background: #303030;
       color: #ddd;
-      border-radius: 6px;
-      padding: 4px 8px;
+      border-radius: 20px;
+      padding: 4px 10px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 0.75rem;
     }
-
-    .function-btn:hover {
-      background: #444;
-    }
-
+    .function-btn:hover { background: #405b79; }
     #history {
       flex: 1;
       overflow-y: auto;
       padding: 15px;
-      font-family: 'Consolas', monospace;
-      border-bottom: 1px solid #333;
-      white-space: pre-wrap;
-      background: #1a1a1a;
-      line-height: 1.4;
+      font-family: 'Fira Code', monospace;
+      border-bottom: 1px solid #2a3450;
+      background: #0c1020;
+      line-height: 1.5;
+      font-size: 0.9rem;
     }
-
     #analysis {
       padding: 15px;
-      font-family: 'Consolas', monospace;
-      background: #1a1a1a;
+      font-family: 'Fira Code', monospace;
+      background: #0a0e1a;
       overflow-y: auto;
-      max-height: 300px;
+      max-height: 290px;
+      font-size: 0.88rem;
     }
-
+    .analysis-title {
+      color: #c79aff;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .analysis-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .analysis-label {
+      width: 96px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .analysis-value { flex: 1; word-break: break-word; }
+    .domain-check {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 14px;
+      background: #222a40;
+      border-left: 4px solid var(--primary);
+    }
+    .history-entry {
+      margin-bottom: 12px;
+      border-bottom: 1px dashed #334155;
+      padding-bottom: 8px;
+    }
+    .input-expr { color: #b9a2ff; font-weight: bold; }
+    .output-result { color: var(--text); margin-top: 4px; }
+    .error { color: var(--danger); }
+    .success { color: var(--success); }
+    .warning { color: var(--warning); }
     #controls {
       display: flex;
-      padding: 15px;
-      background: #1a1a1a;
-      border-top: 2px solid #333;
-      gap: 10px;
+      padding: 12px 15px;
+      background: #131826;
+      border-top: 2px solid #332a55;
+      gap: 12px;
       align-items: center;
     }
-
     #expr {
       flex: 1;
-      padding: 12px 15px;
+      padding: 14px 18px;
       font-size: 1rem;
-      border-radius: 8px;
-      border: 1px solid #444;
-      background: #2a2a2a;
-      color: var(--text);
-      font-family: 'Consolas', monospace;
+      border-radius: 60px;
+      border: 1px solid #4c3a70;
+      background: #1e2338;
+      color: #fff;
+      font-family: 'Fira Code', monospace;
     }
-
     #expr:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+      border-color: #b57cff;
+      box-shadow: 0 0 0 3px #7d4ecf40;
     }
-
     #colorPicker {
-      width: 50px;
-      height: 40px;
+      width: 48px;
+      height: 42px;
       border: none;
       background: none;
       cursor: pointer;
-      border-radius: 5px;
-      overflow: hidden;
+      border-radius: 30px;
     }
-
     button {
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 40px;
       cursor: pointer;
       background: var(--primary);
-      color: #fff;
+      color: #0b0e1a;
       font-weight: bold;
-      transition: all 0.2s ease;
+      transition: 0.2s;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-
     button:hover {
-      background: #ff5722;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+      background: #d8aaff;
+      transform: scale(1.02);
+      box-shadow: 0 6px 14px #a56effaa;
     }
-
     .tab-container {
       display: flex;
-      background: #252525;
-      border-bottom: 1px solid #333;
+      background: #0f1422;
+      border-bottom: 1px solid #373b55;
+      height: 49px;
     }
-
     .tab {
-      padding: 10px 20px;
+      padding: 12px 20px;
       cursor: pointer;
-      background: #2a2a2a;
-      border-right: 1px solid #333;
-      transition: background 0.2s;
+      background: #1d2337;
+      border-right: 1px solid #323a55;
+      font-weight: 600;
+      user-select: none;
     }
-
     .tab.active {
-      background: var(--card-bg);
-      color: var(--primary);
-      border-bottom: 2px solid var(--primary);
+      background: #272e45;
+      color: #d0adff;
+      border-bottom: 3px solid #a974ff;
     }
-
-    .tab:hover:not(.active) {
-      background: #303030;
-    }
-
-    .domain-check {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 5px;
-      background: #2a1a1a;
-      border-left: 3px solid var(--primary);
-    }
-
-    .error { color: #ff6b6b; }
-    .success { color: #6bff6b; }
-    .warning { color: #ffb86b; }
-
-    .plot-controls {
+    .plot-controls, .material-controls, .color-mode-controls, .complex-style-controls {
       position: absolute;
-      bottom: 15px;
-      right: 15px;
-      display: flex;
-      gap: 10px;
       z-index: 100;
+      display: flex;
+      gap: 8px;
+      background: rgba(10, 10, 20, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 10px 14px;
+      border-radius: 50px;
+      border: 1px solid #5d4f8b;
     }
-
+    .plot-controls { bottom: 20px; right: 20px; }
+    .material-controls { top: 70px; right: 20px; }
+    .color-mode-controls { top: 140px; right: 20px; }
+    .complex-style-controls {
+      top: 70px;
+      right: 20px;
+      flex-wrap: wrap;
+      max-width: 430px;
+      border-radius: 20px;
+    }
     .plot-btn {
-      padding: 8px 12px;
-      background: rgba(30, 30, 30, 0.8);
-      border-radius: 5px;
-      color: var(--text);
+      padding: 6px 14px;
+      background: #1f2740;
+      border-radius: 40px;
+      color: white;
       cursor: pointer;
-      font-size: 0.9rem;
-      border: 1px solid #444;
-      transition: all 0.2s;
+      font-size: 0.8rem;
+      border: 1px solid #5b4890;
+      transition: 0.1s;
+      white-space: nowrap;
+      user-select: none;
     }
-
-    .plot-btn:hover {
-      background: rgba(50, 50, 50, 0.9);
-      border-color: var(--accent);
-    }
-
     .plot-btn.active {
-      background: var(--primary);
-      color: #fff;
+      background: #a974ff;
+      color: #000;
+      border-color: #ffd966;
     }
-
-    .history-entry {
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #333;
-    }
-
-    .input-expr {
-      color: var(--accent);
-      font-weight: bold;
-    }
-
-    .output-result {
-      color: var(--text);
-      margin-top: 5px;
-    }
-
-    .analysis-title {
-      color: var(--primary);
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-
-    .analysis-item {
-      margin-bottom: 8px;
-      display: flex;
-    }
-
-    .analysis-label {
-      flex: 0 0 150px;
-      color: #aaa;
-    }
-
-    .analysis-value {
-      flex: 1;
-    }
-
-    .material-controls {
-      position: absolute;
-      top: 50px;
-      right: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 100;
-    }
-
-    .color-mode-controls {
-      position: absolute;
-      top: 150px;
-      right: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 100;
-    }
-
     #complexWrapper {
-      width: 100%;
-      height: 100%;
-      display: none;
+      background: #03050c;
       position: relative;
-      background: #05060a;
-      overflow: hidden;
     }
-
     #complexPlot {
       width: 100%;
       height: 100%;
       display: block;
-      background: #05060a;
       cursor: crosshair;
     }
-
     #complexHud {
       position: absolute;
-      left: 12px;
-      top: 12px;
-      z-index: 20;
-      background: rgba(10, 10, 16, 0.72);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(6px);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-family: Consolas, monospace;
-      font-size: 13px;
-      color: #ddd;
-      line-height: 1.5;
+      left: 15px;
+      top: 15px;
+      background: rgba(5, 7, 18, 0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 12px 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      border: 1px solid #6b47b0;
+      color: #cbd5e0;
       pointer-events: none;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      line-height: 1.6;
     }
-
-    #complexExpr { color: #b58cff; font-weight: bold; }
-    #complexMouse { color: #7fd7ff; }
-    #complexView { color: #9adf9f; }
-
-    .plotly-graph-div {
-      width: 100%;
-      height: 100%;
-    }
-
-    .material-controls,
-    .color-mode-controls,
-    .plot-controls.three-only {
-      display: none;
-    }
-
-    .complex-style-controls {
-      position: absolute;
-      top: 50px;
-      right: 15px;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 100;
+    @media (max-width: 1100px) {
+      main { flex-direction: column; }
+      #outputArea { flex: 0 0 280px; }
+      #plotArea { min-height: 420px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <span class="logo">🔥 Wolfram Beta 3000 🔥</span>
+    <span class="logo">🔥 WOLFRAM BETA 3000 – THREE.JS COMPLEX FRACTALS</span>
   </header>
 
   <main>
     <div id="outputArea">
       <div id="functionList"></div>
-
       <div id="history">
+        <div class="history-entry"><span class="input-expr">~[math]></span> Bem-vindo ao reino dos fractais infinitos.</div>
         <div class="history-entry">
-          <div class="input-expr">~[math]> Bem-vindo ao Wolfram Beta 3000</div>
-          <div class="output-result">Digite uma expressão matemática para começar</div>
-        </div>
-        <div class="history-entry">
-          <div class="input-expr">~[math]> Exemplos:</div>
-          <div class="output-result">- sin(x) * cos(x)</div>
-          <div class="output-result">- x^3 - 2x + 1</div>
-          <div class="output-result">- contour x^2 + y^2</div>
-          <div class="output-result">- surface sin(x) + cos(y)</div>
-          <div class="output-result">- domaincolor 1/z</div>
-          <div class="output-result">- domaincolor (z-1)/(z+1)</div>
-          <div class="output-result">- domaincolor Mandelbrot(z)</div>
-          <div class="output-result">- clear2d</div>
+          <span class="input-expr">Exemplos:</span><br>
+          sin(x) &nbsp;|&nbsp; x^3 - 2x + 1 &nbsp;|&nbsp; contour x^2 + y^2<br>
+          <span style="color:#b4a0ff">surface sin(x) + cos(y)</span> &nbsp;|&nbsp;
+          <span style="color:#ffb77c">revolution sin(x) around x</span><br>
+          <span style="color:#b4a0ff">domaincolor (z-1)/(z+1)</span> &nbsp;|&nbsp;
+          <span style="color:#b4a0ff">domaincolor Mandelbrot(z)</span> &nbsp;|&nbsp;
+          <span style="color:#ffb77c">domaincolor Tetration(z)</span>
         </div>
       </div>
-
       <div id="analysis">
-        <div class="analysis-title">📊 Análise da Expressão</div>
-        <div class="analysis-item">
-          <div class="analysis-label">Domínio:</div>
-          <div class="analysis-value" id="domain-value">Aguardando entrada...</div>
-        </div>
-        <div class="analysis-item">
-          <div class="analysis-label">Tipo:</div>
-          <div class="analysis-value" id="type-value">-</div>
-        </div>
-        <div class="analysis-item">
-          <div class="analysis-label">Simetria:</div>
-          <div class="analysis-value" id="symmetry-value">-</div>
-        </div>
-        <div class="domain-check" id="domain-check"></div>
+        <div class="analysis-title">📊 Análise em tempo real</div>
+        <div class="analysis-item"><span class="analysis-label">Domínio:</span><span class="analysis-value" id="domain-value">—</span></div>
+        <div class="analysis-item"><span class="analysis-label">Tipo:</span><span class="analysis-value" id="type-value">—</span></div>
+        <div class="analysis-item"><span class="analysis-label">Simetria:</span><span class="analysis-value" id="symmetry-value">—</span></div>
+        <div class="domain-check" id="domain-check">⚡ Digite uma expressão.</div>
       </div>
     </div>
 
     <div id="plotArea">
       <div class="tab-container">
-        <div class="tab active" data-tab="3d">Visualização 3D</div>
-        <div class="tab" data-tab="2d">Gráfico 2D</div>
-        <div class="tab" data-tab="complex">Gráfico complexo</div>
-        <div class="tab" data-tab="contour">Mapa de Contorno</div>
+        <div class="tab active" data-tab="3d">🌐 3D</div>
+        <div class="tab" data-tab="2d">📈 2D</div>
+        <div class="tab" data-tab="complex">🌀 Complexo</div>
+        <div class="tab" data-tab="contour">🗺️ Contorno</div>
       </div>
 
       <div id="plot3d"></div>
       <div id="plot2d"></div>
+      <div id="contourPlot"></div>
 
       <div id="complexWrapper">
         <canvas id="complexPlot"></canvas>
         <div id="complexHud">
           <div id="complexExpr">f(z) = (z-1)/(z+1)</div>
           <div id="complexMouse">z = 0 + 0i</div>
-          <div id="complexView">centro: 0 + 0i | escala: 4.000000</div>
+          <div id="complexView">centro: 0+0i | escala: 4.0</div>
         </div>
       </div>
 
-      <div id="contourPlot"></div>
-
       <div class="plot-controls three-only">
-        <div class="plot-btn" id="resetView">Redefinir Vista</div>
-        <div class="plot-btn" id="toggleGrid">Alternar Grade</div>
-        <div class="plot-btn" id="toggleAxes">Alternar Eixos</div>
-        <div class="plot-btn" id="toggleWireframe">Wireframe</div>
-        <div class="plot-btn" id="toggleAnimation">Ligar Animação</div>
+        <div class="plot-btn" id="resetView">⟲ Reset</div>
+        <div class="plot-btn active" id="toggleGrid">⧉ Grade</div>
+        <div class="plot-btn active" id="toggleAxes">◉ Eixos</div>
+        <div class="plot-btn" id="toggleWireframe">▣ Wireframe</div>
+        <div class="plot-btn" id="toggleAnimation">↻ Rotação</div>
       </div>
 
       <div class="material-controls">
-        <div class="plot-btn" id="plasticMaterial">Plástico</div>
+        <div class="plot-btn active" id="plasticMaterial">Plástico</div>
         <div class="plot-btn" id="metalMaterial">Metal</div>
         <div class="plot-btn" id="glassMaterial">Vidro</div>
+      </div>
+
+      <div class="color-mode-controls">
+        <div class="plot-btn" id="solidColor">Sólida</div>
+        <div class="plot-btn active" id="rainbowColor">Arco-íris</div>
+        <div class="plot-btn" id="heightColor">Altura</div>
       </div>
 
       <div class="complex-style-controls" id="complexStyleControls">
         <div class="plot-btn active" data-cstyle="classic">Classic</div>
         <div class="plot-btn" data-cstyle="dark">Dark</div>
-        <div class="plot-btn" data-cstyle="fractal">Fractal</div>
         <div class="plot-btn" data-cstyle="neon">Neon</div>
         <div class="plot-btn" data-cstyle="pastel">Pastel</div>
-        <div class="plot-btn" data-cstyle="phasegrid">Phase Grid</div>
+        <div class="plot-btn" data-cstyle="phasegrid">PhaseGrid</div>
         <div class="plot-btn" data-cstyle="checker">Checker</div>
-        <div class="plot-btn" data-cstyle="redblue">Red/Blue Grid</div>
+        <div class="plot-btn" data-cstyle="redblue">Red/Blue</div>
         <div class="plot-btn" data-cstyle="tiles">Tiles</div>
         <div class="plot-btn" data-cstyle="bubbles">Bubbles</div>
-        <div class="plot-btn" data-cstyle="smoothbands">Smooth Bands</div>
-      </div>
-
-      <div class="color-mode-controls">
-        <div class="plot-btn" id="solidColor">Cor Sólida</div>
-        <div class="plot-btn active" id="rainbowColor">Arco-Íris</div>
-        <div class="plot-btn" id="heightColor">Por Altura</div>
+        <div class="plot-btn" data-cstyle="smoothbands">Smooth</div>
+        <div class="plot-btn" data-cstyle="fractal">Fractal</div>
+        <div class="plot-btn" data-cstyle="tetration">⚡ TETRAÇÃO</div>
       </div>
     </div>
   </main>
 
   <div id="controls">
-    <input id="expr" type="text" placeholder="Digite expressão matemática (ex: sin(x)^2 + cos(x)^2)">
-    <input id="colorPicker" type="color" value="#ff6b35" title="Cor do gráfico">
-    <button id="runBtn">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM6.5 5a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM6 7.5a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5zm0 2a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5z"/>
-      </svg>
-      Executar
-    </button>
+    <input id="expr" type="text" placeholder="Digite: sin(x), contour x*y, surface sin(x)+cos(y), domaincolor Mandelbrot(z), Tetration(z) ..." />
+    <input id="colorPicker" type="color" value="#b380ff" />
+    <button id="runBtn">⚡ EXECUTAR</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/gh/user52251/t@7cb7222/wasmLib.js"></script>
   <script>
-    let DescartesInstance = null;
-    let scene, camera, renderer, controls;
-    let currentObjects = [];
-    let currentMesh = null;
-    let showGrid = true;
-    let showAxes = true;
-    let showWireframe = false;
-    let isAnimating = false;
-    let currentPlotData = null;
-    let currentMaterialType = 'plastic';
-    let currentColorMode = 'rainbow';
-    let currentContourPlot = null;
-    let complexGL = null;
-    let complexColorStyle = 'classic';
-    let plot2DSeries = [];
-    let nextSeriesId = 1;
+    (function() {
+      let DescartesInstance = null;
+      let scene, camera, renderer, orbitControls;
+      let currentObjects = [];
+      let currentMesh = null;
+      let currentPlotData = null;
+      let currentContourPlot = false;
+      let complexGL = null; 
+      let referenceOrbit = [];
+      let referenceC = {x:0,y:0};
+      let maxIter = 4096;
+      let perturbationEnabled = true;
+      let showGrid = true;
+      let showAxes = true;
+      let showWireframe = false;
+      let isAnimating = false;
+      let currentMaterialType = 'plastic';
+      let currentColorMode = 'rainbow';
+      let complexColorStyle = 'classic';
 
-    const plotPalette = [
-      '#ff6b6b',
-      '#4dabf7',
-      '#51cf66',
-      '#ffd43b',
-      '#b197fc',
-      '#ffa94d',
-      '#63e6be',
-      '#f783ac',
-      '#74c0fc',
-      '#ced4da'
-    ];
+      let plot2DSeries = [];
+      let nextSeriesId = 1;
 
-    const rainbowColors = [
-      0xff0000,
-      0xff7f00,
-      0xffff00,
-      0x00ff00,
-      0x0000ff,
-      0x4b0082,
-      0x9400d3
-    ];
+      const plotPalette = ['#ff6b6b','#4dabf7','#51cf66','#ffd43b','#b197fc','#ffa94d','#63e6be','#f783ac','#74c0fc','#ced4da'];
+      const rainbowColors = [0xff0000,0xff7f00,0xffff00,0x00ff00,0x0000ff,0x4b0082,0x9400d3];
 
-    function initComplexStyleControls() {
-      const wrap = document.getElementById('complexStyleControls');
-      if (!wrap) return;
+      const $ = id => document.getElementById(id);
 
-      wrap.querySelectorAll('[data-cstyle]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          wrap.querySelectorAll('[data-cstyle]').forEach(x => x.classList.remove('active'));
-          btn.classList.add('active');
-          complexColorStyle = btn.getAttribute('data-cstyle');
-          if (complexGL && complexGL.setColorStyle) {
-            complexGL.setColorStyle(complexColorStyle);
+      function addHistory(expr, result, cls = '') {
+        const history = $('history');
+        const html = `
+          <div class="history-entry">
+            <div class="input-expr">~[math]> ${escapeHtml(expr)}</div>
+            ${result ? `<div class="output-result ${cls}">${result}</div>` : ''}
+          </div>
+        `;
+        history.insertAdjacentHTML('beforeend', html);
+        history.scrollTop = history.scrollHeight;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      function setAnalysis(domain, type, symmetry, checkHtml) {
+        $('domain-value').innerHTML = domain;
+        $('type-value').innerHTML = type;
+        $('symmetry-value').innerHTML = symmetry;
+        $('domain-check').innerHTML = checkHtml;
+      }
+
+      function sanitize(val) {
+        if (val === null || val === undefined) return null;
+        if (typeof val === 'number' && (!isFinite(val) || isNaN(val))) return null;
+        if (typeof val === 'string' && /(nan|inf)/i.test(val)) return null;
+        return val;
+      }
+
+      function getColorFromPicker() {
+        return $('colorPicker')?.value || '#b380ff';
+      }
+
+      function adjustDomainForExpression(expr) {
+        let min = -5;
+        let max = 5;
+        let msg = '⚡ Domínio padrão: [-5, 5]';
+        let kind = 'real padrão';
+
+        if (/sqrt\s*\(/i.test(expr)) {
+          min = 0;
+          msg = '⚡ Ajustado para raiz: [0, 5]';
+          kind = 'raiz quadrada';
+        }
+        if (/(ln|log)\s*\(/i.test(expr)) {
+          min = 0.1;
+          msg = '⚡ Ajustado para logaritmo: [0.1, 5]';
+          kind = 'logarítmica';
+        }
+        if (/(asin|acos)\s*\(/i.test(expr)) {
+          min = -1;
+          max = 1;
+          msg = '⚡ Ajustado para trigonométrica inversa: [-1, 1]';
+          kind = 'inversa trigonométrica';
+        }
+        return { min, max, msg, kind };
+      }
+
+      function analyzeExpression(expr) {
+        const lower = expr.toLowerCase();
+        let type = 'Função';
+        let symmetry = 'Não determinada';
+
+        if (lower.startsWith('domaincolor') || lower.startsWith('complexplot')) type = 'Complexa / GPU';
+        else if (lower.startsWith('contour')) type = 'Mapa de contorno';
+        else if (lower.startsWith('surface')) type = 'Superfície 3D';
+        else if (lower.startsWith('revolution')) type = 'Sólido de revolução';
+        else if (/(sin|cos|tan)/.test(lower)) type = 'Trigonométrica';
+        else if (/(ln|log)/.test(lower)) type = 'Logarítmica';
+        else if (/sqrt/.test(lower)) type = 'Radical';
+        else if (/\^/.test(lower)) type = 'Polinomial / potência';
+
+        const stripped = lower.replace(/\s+/g, '');
+        if (stripped === stripped.replaceAll('x','(-x)')) symmetry = 'Par';
+        else if (stripped.includes('sin') && !stripped.includes('cos')) symmetry = 'Possivelmente ímpar';
+
+        return { type, symmetry };
+      }
+
+      function initThreeJS() {
+        const container = $('plot3d');
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x121625);
+
+        camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(8, 6, 8);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+        orbitControls.enableDamping = false;
+
+        scene.add(new THREE.AmbientLight(0x404060, 1.0));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        dirLight.position.set(6, 10, 7);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        pointLight.position.set(-6, 6, 8);
+        scene.add(pointLight);
+
+        addGrid();
+        addAxes();
+        animate();
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (isAnimating && currentMesh) currentMesh.rotation.y += 0.008;
+        orbitControls?.update();
+        renderer?.render(scene, camera);
+      }
+
+      function addGrid() {
+        if (!showGrid) return;
+        const g = new THREE.GridHelper(20, 20, 0x7a6ab0, 0x2f2b4a);
+        g.position.y = -0.01;
+        scene.add(g);
+        currentObjects.push(g);
+      }
+
+      function addAxes() {
+        if (!showAxes) return;
+        const a = new THREE.AxesHelper(8);
+        scene.add(a);
+        currentObjects.push(a);
+      }
+
+      function clearScene() {
+        currentObjects.forEach(obj => {
+          scene.remove(obj);
+          if (obj.geometry) obj.geometry.dispose?.();
+          if (obj.material) {
+            if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose?.());
+            else obj.material.dispose?.();
           }
         });
-      });
-    }
-
-    function initThreeJS() {
-      const container = document.getElementById('plot3d');
-
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x7d7d7d);
-
-      camera = new THREE.PerspectiveCamera(
-        75,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        1000
-      );
-      camera.position.set(8, 8, 8);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      container.appendChild(renderer.domElement);
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = false;
-      controls.dampingFactor = 0.05;
-
-      const ambientLight = new THREE.AmbientLight(0xeeeeee, 0.6);
-      scene.add(ambientLight);
-
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(10, 10, 5);
-      directionalLight.castShadow = true;
-      scene.add(directionalLight);
-
-      const pointLight = new THREE.PointLight(0xffffff, 0.5);
-      pointLight.position.set(-10, 10, 10);
-      scene.add(pointLight);
-
-      addGrid();
-      addAxes();
-      animate();
-
-      window.addEventListener('resize', onWindowResize);
-    }
-
-    function addGrid() {
-      if (!showGrid) return;
-      const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
-      gridHelper.position.y = -0.01;
-      scene.add(gridHelper);
-      currentObjects.push(gridHelper);
-    }
-
-    function addAxes() {
-      if (!showAxes) return;
-      const axesHelper = new THREE.AxesHelper(8);
-      scene.add(axesHelper);
-      currentObjects.push(axesHelper);
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-
-      if (isAnimating && currentMesh) {
-        currentMesh.rotation.y += 0.01;
+        currentObjects = [];
+        currentMesh = null;
       }
 
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    function onWindowResize() {
-      const container = document.getElementById('plot3d');
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-
-      if (complexGL && complexGL.render) complexGL.render();
-      if (plot2DSeries.length > 0) render2DPlot();
-    }
-
-    function setTabUI(tabType) {
-      document.getElementById('plot3d').style.display = 'none';
-      document.getElementById('plot2d').style.display = 'none';
-      document.getElementById('complexWrapper').style.display = 'none';
-      document.getElementById('contourPlot').style.display = 'none';
-
-      const threeOnly = document.querySelector('.plot-controls.three-only');
-      const materialControls = document.querySelector('.material-controls');
-      const colorControls = document.querySelector('.color-mode-controls');
-      const complexControls = document.getElementById('complexStyleControls');
-
-      if (threeOnly) threeOnly.style.display = 'none';
-      if (materialControls) materialControls.style.display = 'none';
-      if (colorControls) colorControls.style.display = 'none';
-      if (complexControls) complexControls.style.display = 'none';
-
-      if (tabType === '2d') {
-        document.getElementById('plot2d').style.display = 'block';
-      } else if (tabType === 'complex') {
-        document.getElementById('complexWrapper').style.display = 'block';
-        if (complexControls) complexControls.style.display = 'flex';
-      } else if (tabType === 'contour') {
-        document.getElementById('contourPlot').style.display = 'block';
-      } else {
-        document.getElementById('plot3d').style.display = 'block';
-        if (threeOnly) threeOnly.style.display = 'flex';
-        if (materialControls) materialControls.style.display = 'flex';
-        if (colorControls) colorControls.style.display = 'flex';
+      function updateScene() {
+        clearScene();
+        addGrid();
+        addAxes();
+        if (currentPlotData) redrawCurrentPlot();
       }
-    }
 
-    function initTabs() {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          setTabUI(tab.getAttribute('data-tab'));
-        });
-      });
+      function redrawCurrentPlot() {
+        if (!currentPlotData) return;
+        if (currentPlotData.type === '3d-surface') drawSurface2DFromData(currentPlotData.data, false);
+        if (currentPlotData.type === '3d-revolution') drawRevolution(currentPlotData.points, currentPlotData.axis, false);
+        if (currentPlotData.type === '2d') render2DPlot();
+        if (currentPlotData.type === 'contour') drawContourPlot(currentPlotData.data, false);
+      }
 
-      setTabUI('3d');
-    }
+      function onWindowResize() {
+        const container = $('plot3d');
+        if (camera && renderer && container.clientWidth && container.clientHeight) {
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+        if (plot2DSeries.length) render2DPlot();
+      }
 
-    function initPlotControls() {
-      document.getElementById('resetView').addEventListener('click', () => {
-        controls.reset();
-        camera.position.set(8, 8, 8);
-        if (complexGL && complexGL.resetView) complexGL.resetView();
-      });
+      function setTabUI(tabType) {
+        $('plot3d').style.display = 'none';
+        $('plot2d').style.display = 'none';
+        $('contourPlot').style.display = 'none';
+        $('complexWrapper').style.display = 'none';
 
-      document.getElementById('toggleGrid').addEventListener('click', () => {
-        showGrid = !showGrid;
-        updateScene();
-      });
+        document.querySelector('.plot-controls').style.display = 'none';
+        document.querySelector('.material-controls').style.display = 'none';
+        document.querySelector('.color-mode-controls').style.display = 'none';
+        $('complexStyleControls').style.display = 'none';
 
-      document.getElementById('toggleAxes').addEventListener('click', () => {
-        showAxes = !showAxes;
-        updateScene();
-      });
-
-      document.getElementById('toggleWireframe').addEventListener('click', function() {
-        showWireframe = !showWireframe;
-        updateButtonState('toggleWireframe', showWireframe);
-        updateMaterial();
-      });
-
-      document.getElementById('toggleAnimation').addEventListener('click', function() {
-        isAnimating = !isAnimating;
-        updateButtonState('toggleAnimation', isAnimating);
-      });
-
-      document.getElementById('plasticMaterial').addEventListener('click', () => {
-        currentMaterialType = 'plastic';
-        updateMaterial();
-        updateMaterialButtons('plasticMaterial');
-      });
-
-      document.getElementById('metalMaterial').addEventListener('click', () => {
-        currentMaterialType = 'metal';
-        updateMaterial();
-        updateMaterialButtons('metalMaterial');
-      });
-
-      document.getElementById('glassMaterial').addEventListener('click', () => {
-        currentMaterialType = 'glass';
-        updateMaterial();
-        updateMaterialButtons('glassMaterial');
-      });
-
-      document.getElementById('solidColor').addEventListener('click', () => {
-        currentColorMode = 'solid';
-        updateColorMode();
-        updateColorButtons('solidColor');
-      });
-
-      document.getElementById('rainbowColor').addEventListener('click', () => {
-        currentColorMode = 'rainbow';
-        updateColorMode();
-        updateColorButtons('rainbowColor');
-      });
-
-      document.getElementById('heightColor').addEventListener('click', () => {
-        currentColorMode = 'height';
-        updateColorMode();
-        updateColorButtons('heightColor');
-      });
-    }
-
-    function updateScene() {
-      clearScene();
-      if (showGrid) addGrid();
-      if (showAxes) addAxes();
-      if (currentPlotData) redrawCurrentPlot();
-    }
-
-    function redrawCurrentPlot() {
-      if (!currentPlotData) return;
-
-      if (currentPlotData.type === '3d') {
-        if (currentPlotData.axis) {
-          drawRevolution(currentPlotData.points, currentPlotData.axis);
-        } else if (currentPlotData.surfaceType === '2d') {
-          drawSurface2DFromData(currentPlotData.points);
+        if (tabType === '2d') {
+          $('plot2d').style.display = 'block';
+        } else if (tabType === 'complex') {
+          $('complexWrapper').style.display = 'block';
+          $('complexStyleControls').style.display = 'flex';
+        } else if (tabType === 'contour') {
+          $('contourPlot').style.display = 'block';
         } else {
-          drawSolidFromData(currentPlotData.points);
+          $('plot3d').style.display = 'block';
+          document.querySelector('.plot-controls').style.display = 'flex';
+          document.querySelector('.material-controls').style.display = 'flex';
+          document.querySelector('.color-mode-controls').style.display = 'flex';
         }
-      } else if (currentPlotData.type === '2d') {
-        render2DPlot();
-      } else if (currentPlotData.type === 'complex') {
-        if (complexGL && complexGL.render) complexGL.render();
       }
-    }
 
-    function updateButtonState(buttonId, isActive) {
-      const button = document.getElementById(buttonId);
-      button.classList.toggle('active', !!isActive);
-    }
-
-    function updateMaterialButtons(activeButtonId) {
-      const materialButtons = ['plasticMaterial', 'metalMaterial', 'glassMaterial'];
-      materialButtons.forEach(buttonId => {
-        document.getElementById(buttonId).classList.toggle('active', buttonId === activeButtonId);
-      });
-    }
-
-    function updateColorButtons(activeButtonId) {
-      const colorButtons = ['solidColor', 'rainbowColor', 'heightColor'];
-      colorButtons.forEach(buttonId => {
-        document.getElementById(buttonId).classList.toggle('active', buttonId === activeButtonId);
-      });
-    }
-
-    function updateMaterial() {
-      if (!currentMesh) return;
-
-      const baseColor = getColorFromPicker();
-
-      switch (currentMaterialType) {
-        case 'plastic':
-          currentMesh.material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            shininess: 30,
-            wireframe: showWireframe
+      function initTabs() {
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            setTabUI(tab.dataset.tab);
           });
-          break;
-        case 'metal':
-          currentMesh.material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            shininess: 100,
-            specular: 0x555555,
-            wireframe: showWireframe
-          });
-          break;
-        case 'glass':
-          currentMesh.material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            transparent: true,
-            opacity: 0.7,
-            shininess: 90,
-            specular: 0xffffff,
-            wireframe: showWireframe
-          });
-          break;
+        });
+        setTabUI('3d');
       }
 
-      updateColorMode();
-    }
-
-    function updateColorMode() {
-      if (!currentMesh) return;
-
-      switch (currentColorMode) {
-        case 'rainbow':
-          applyRainbowColors();
-          break;
-        case 'height':
-          applyHeightColors();
-          break;
-        case 'solid':
-          break;
-      }
-    }
-
-    function applyRainbowColors() {
-      if (!currentMesh || !currentMesh.geometry) return;
-
-      const colors = [];
-      const positions = currentMesh.geometry.attributes.position.array;
-
-      for (let i = 0; i < positions.length; i += 3) {
-        const x = positions[i];
-        const y = positions[i + 1];
-        const z = positions[i + 2];
-
-        const colorIndex = Math.abs(Math.floor((x + y + z) * 10)) % rainbowColors.length;
-        const color = new THREE.Color(rainbowColors[colorIndex]);
-
-        colors.push(color.r, color.g, color.b);
+      function setActiveButtons(ids, activeId) {
+        ids.forEach(id => $(id).classList.toggle('active', id === activeId));
       }
 
-      currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      currentMesh.material.vertexColors = true;
-      currentMesh.material.needsUpdate = true;
-    }
+      function renderFunctionList() {
+        const list = $('functionList');
+        if (!plot2DSeries.length) {
+          list.innerHTML = '<div style="color:#888">Nenhuma função 2D.</div>';
+          return;
+        }
 
-    function applyHeightColors() {
-      if (!currentMesh || !currentMesh.geometry) return;
-
-      const colors = [];
-      const positions = currentMesh.geometry.attributes.position.array;
-
-      let minY = Infinity;
-      let maxY = -Infinity;
-
-      for (let i = 1; i < positions.length; i += 3) {
-        const y = positions[i];
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-
-      for (let i = 1; i < positions.length; i += 3) {
-        const y = positions[i];
-        const normalizedY = (y - minY) / (maxY - minY || 1);
-
-        const color = new THREE.Color();
-        color.setHSL(0.7 - normalizedY * 0.7, 0.8, 0.5);
-
-        colors.push(color.r, color.g, color.b);
-      }
-
-      currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      currentMesh.material.vertexColors = true;
-      currentMesh.material.needsUpdate = true;
-    }
-
-    function clearScene() {
-      currentObjects.forEach(obj => scene.remove(obj));
-      currentObjects = [];
-      currentMesh = null;
-    }
-
-    function adjustDomainForExpression(expr) {
-      const domainCheckEl = document.getElementById('domain-check');
-      const domainValueEl = document.getElementById('domain-value');
-
-      if (!domainCheckEl || !domainValueEl) return { min: -5, max: 5 };
-
-      let min = -5;
-      let max = 5;
-      let message = "Domínio padrão: [-5, 5]";
-      let type = "padrão";
-
-      if (expr.includes('sqrt(')) {
-        min = 0;
-        message = "Domínio ajustado: [0, 5]";
-        type = "raiz quadrada";
-      }
-
-      if (expr.includes('ln(') || expr.includes('log(')) {
-        min = 0.1;
-        message = "Domínio ajustado: [0.1, 5]";
-        type = "logaritmo";
-      }
-
-      if (expr.includes('asin(') || expr.includes('acos(') || expr.includes('atan(')) {
-        min = -1;
-        max = 1;
-        message = "Domínio ajustado: [-1, 1]";
-        type = "trigonométrica inversa";
-      }
-
-      domainCheckEl.innerHTML = `<span class="success">✅ ${message}</span>`;
-      domainValueEl.innerHTML = `<span class="success">${type}</span>`;
-
-      return { min, max };
-    }
-
-    function analyzeExpression(expr) {
-      const typeValueEl = document.getElementById('type-value');
-      const symmetryValueEl = document.getElementById('symmetry-value');
-
-      if (!typeValueEl || !symmetryValueEl) return;
-
-      let type = "Função";
-      if (expr.includes('sin') || expr.includes('cos') || expr.includes('tan')) {
-        type = "Trigonométrica";
-      } else if (expr.includes('log') || expr.includes('ln')) {
-        type = "Logarítmica";
-      } else if (expr.includes('^')) {
-        type = "Polinomial/Potência";
-      } else if (expr.includes('sqrt')) {
-        type = "Radical";
-      } else if (expr.includes('x') && expr.includes('y')) {
-        type = "Função 2D";
-      }
-
-      typeValueEl.textContent = type;
-      symmetryValueEl.textContent = "Não determinada";
-    }
-
-    function sanitize(val) {
-      if (val === null || val === undefined) return null;
-      if (typeof val === "string" && (val.toLowerCase().includes("nan") || val.toLowerCase().includes("inf"))) return null;
-      if (typeof val === "number" && (!isFinite(val) || isNaN(val))) return null;
-      return val;
-    }
-
-    function getColorFromPicker() {
-      return document.getElementById('colorPicker')?.value || '#ff6b35';
-    }
-
-    function add2DSeries(expr, points, domain) {
-      const color = plotPalette[(nextSeriesId - 1) % plotPalette.length];
-
-      plot2DSeries.push({
-        id: nextSeriesId++,
-        expr,
-        points,
-        domain,
-        color,
-        visible: true
-      });
-
-      renderFunctionList();
-      render2DPlot();
-    }
-
-    function remove2DSeries(id) {
-      plot2DSeries = plot2DSeries.filter(s => s.id !== id);
-      renderFunctionList();
-      render2DPlot();
-    }
-
-    function toggle2DSeries(id) {
-      const item = plot2DSeries.find(s => s.id === id);
-      if (!item) return;
-      item.visible = !item.visible;
-      renderFunctionList();
-      render2DPlot();
-    }
-
-    window.remove2DSeries = remove2DSeries;
-    window.toggle2DSeries = toggle2DSeries;
-
-    function renderFunctionList() {
-      const list = document.getElementById('functionList');
-      if (!list) return;
-
-      if (plot2DSeries.length === 0) {
-        list.innerHTML = `<div style="color:#888;font-family:Consolas,monospace;">Nenhuma função 2D carregada.</div>`;
-        return;
-      }
-
-      list.innerHTML = plot2DSeries.map(item => `
-        <div class="function-item">
-          <div class="function-dot" style="background:${item.color}"></div>
-          <div class="function-name">${item.expr}</div>
-          <div class="function-actions">
-            <button class="function-btn" onclick="toggle2DSeries(${item.id})">${item.visible ? 'Ocultar' : 'Mostrar'}</button>
-            <button class="function-btn" onclick="remove2DSeries(${item.id})">X</button>
+        list.innerHTML = plot2DSeries.map(s => `
+          <div class="function-item">
+            <div class="function-dot" style="background:${s.color}"></div>
+            <div class="function-name">${escapeHtml(s.expr)}</div>
+            <div class="function-actions">
+              <button class="function-btn" onclick="toggle2DSeries(${s.id})">${s.visible ? 'Ocultar' : 'Mostrar'}</button>
+              <button class="function-btn" onclick="remove2DSeries(${s.id})">✖</button>
+            </div>
           </div>
-        </div>
-      `).join('');
-    }
-
-    function render2DPlot() {
-      const container = document.getElementById('plot2d');
-      if (!container) return;
-
-      const visibleSeries = plot2DSeries.filter(s => s.visible);
-
-      if (visibleSeries.length === 0) {
-        Plotly.purge(container);
-        return;
+        `).join('');
       }
 
-      const traces = visibleSeries.map(item => ({
-        x: item.points.map(p => p[0]),
-        y: item.points.map(p => p[1]),
-        type: 'scattergl',
-        mode: 'lines',
-        name: item.expr,
-        line: {
-          color: item.color,
-          width: 3
-        },
-        hovertemplate: `${item.expr}<br>x=%{x:.4f}<br>y=%{y:.4f}<extra></extra>`
-      }));
+      function add2DSeries(expr, points, domain) {
+        const color = plotPalette[(nextSeriesId - 1) % plotPalette.length];
+        plot2DSeries.push({ id: nextSeriesId++, expr, points, domain, color, visible: true });
+        currentPlotData = { type: '2d' };
+        renderFunctionList();
+        render2DPlot();
+      }
 
-      const layout = {
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: { color: '#e0e0e0' },
-        margin: { l: 50, r: 20, t: 20, b: 40 },
-        showlegend: false,
-        xaxis: {
-          title: 'x',
-          gridcolor: '#333',
-          zerolinecolor: '#666'
-        },
-        yaxis: {
-          title: 'y',
-          gridcolor: '#333',
-          zerolinecolor: '#666'
-        }
+      window.remove2DSeries = (id) => {
+        plot2DSeries = plot2DSeries.filter(s => s.id !== id);
+        renderFunctionList();
+        render2DPlot();
       };
 
-      Plotly.react(container, traces, layout, {
-        responsive: true,
-        displaylogo: false,
-        scrollZoom: true
-      });
+      window.toggle2DSeries = (id) => {
+        const s = plot2DSeries.find(item => item.id === id);
+        if (!s) return;
+        s.visible = !s.visible;
+        renderFunctionList();
+        render2DPlot();
+      };
+
+      function render2DPlot() {
+        const container = $('plot2d');
+        const visible = plot2DSeries.filter(s => s.visible);
+        if (!visible.length) {
+          Plotly.purge(container);
+          return;
+        }
+
+        const traces = visible.map(s => ({
+          x: s.points.map(p => p[0]),
+          y: s.points.map(p => p[1]),
+          type: 'scattergl',
+          mode: 'lines',
+          name: s.expr,
+          line: { color: s.color, width: 3 },
+          hovertemplate: `${s.expr}<br>x=%{x:.4f}<br>y=%{y:.4f}<extra></extra>`
+        }));
+
+        Plotly.react(container, traces, {
+          paper_bgcolor: '#1a1e30',
+          plot_bgcolor: '#1a1e30',
+          font: { color: '#ddd' },
+          margin: { l: 0, r: 0, t: 0, b: 0 },
+          showlegend: false,
+          xaxis: { title: 'x', gridcolor: '#333', zerolinecolor: '#666' },
+          yaxis: { title: 'y', gridcolor: '#333', zerolinecolor: '#666' }
+        }, { responsive: true, displaylogo: false, scrollZoom: true });
+      }
+
+      function createMaterial() {
+        const color = getColorFromPicker();
+        const common = { color, wireframe: showWireframe, side: THREE.DoubleSide, vertexColors: false };
+        if (currentMaterialType === 'metal') return new THREE.MeshPhongMaterial({ ...common, shininess: 100, specular: 0x555555 });
+        if (currentMaterialType === 'glass') return new THREE.MeshPhongMaterial({ ...common, transparent: true, opacity: 0.68, shininess: 90, specular: 0xffffff });
+        return new THREE.MeshPhongMaterial({ ...common, shininess: 30 });
+      }
+
+      function applyRainbowColors() {
+        if (!currentMesh?.geometry?.attributes?.position) return;
+        const pos = currentMesh.geometry.attributes.position.array;
+        const colors = [];
+        for (let i = 0; i < pos.length; i += 3) {
+          const x = pos[i], y = pos[i+1], z = pos[i+2];
+          const idx = Math.abs(Math.floor((x + y + z) * 10)) % rainbowColors.length;
+          const c = new THREE.Color(rainbowColors[idx]);
+          colors.push(c.r, c.g, c.b);
+        }
+        currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        currentMesh.material.vertexColors = true;
+        currentMesh.material.needsUpdate = true;
+      }
+
+      function applyHeightColors() {
+        if (!currentMesh?.geometry?.attributes?.position) return;
+        const pos = currentMesh.geometry.attributes.position.array;
+        let minY = Infinity, maxY = -Infinity;
+        for (let i = 1; i < pos.length; i += 3) {
+          minY = Math.min(minY, pos[i]);
+          maxY = Math.max(maxY, pos[i]);
+        }
+        const range = maxY - minY || 1;
+        const colors = [];
+        for (let i = 1; i < pos.length; i += 3) {
+          const t = (pos[i] - minY) / range;
+          const c = new THREE.Color();
+          c.setHSL(0.72 - t * 0.72, 0.86, 0.5);
+          colors.push(c.r, c.g, c.b);
+        }
+        currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        currentMesh.material.vertexColors = true;
+        currentMesh.material.needsUpdate = true;
+      }
+
+      function updateMaterial() {
+        if (!currentMesh) return;
+        const geometry = currentMesh.geometry;
+        scene.remove(currentMesh);
+        currentMesh.material?.dispose?.();
+        currentMesh = new THREE.Mesh(geometry, createMaterial());
+        currentMesh.castShadow = true;
+        currentMesh.receiveShadow = true;
+        scene.add(currentMesh);
+        currentObjects.push(currentMesh);
+        updateColorMode();
+      }
+
+      function updateColorMode() {
+        if (!currentMesh) return;
+        if (currentColorMode === 'solid') {
+          currentMesh.material.vertexColors = false;
+          currentMesh.material.color = new THREE.Color(getColorFromPicker());
+          currentMesh.material.wireframe = showWireframe;
+          currentMesh.material.needsUpdate = true;
+          return;
+        }
+        if (currentColorMode === 'rainbow') return applyRainbowColors();
+        if (currentColorMode === 'height') return applyHeightColors();
+      }
+
+      function createMesh(geometry) {
+        currentMesh = new THREE.Mesh(geometry, createMaterial());
+        currentMesh.castShadow = true;
+        currentMesh.receiveShadow = true;
+        scene.add(currentMesh);
+        currentObjects.push(currentMesh);
+        updateColorMode();
+        document.querySelector('[data-tab="3d"]').click();
+      }
+
+      function drawSurface2DFromData(surfaceData, switchTab = true) {
+        clearScene();
+        addGrid();
+        addAxes();
+
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const indices = [];
+        const xArray = surfaceData.x;
+        const yArray = surfaceData.y;
+        const zMatrix = surfaceData.z;
+
+        for (let i = 0; i < yArray.length; i++) {
+          for (let j = 0; j < xArray.length; j++) {
+            vertices.push(xArray[j], zMatrix[i][j], yArray[i]);
+          }
+        }
+
+        for (let i = 0; i < yArray.length - 1; i++) {
+          for (let j = 0; j < xArray.length - 1; j++) {
+            const a = i * xArray.length + j;
+            const b = a + 1;
+            const c = (i + 1) * xArray.length + j;
+            const d = c + 1;
+            indices.push(a, b, c, b, d, c);
+          }
+        }
+
+        geometry.setIndex(indices);
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.computeVertexNormals();
+        createMesh(geometry);
+        currentPlotData = { type: '3d-surface', data: surfaceData };
+        if (switchTab) document.querySelector('[data-tab="3d"]').click();
+      }
+
+      function organizePointsIntoRings(points3D, axis) {
+        const groups = {};
+        points3D.forEach(point => {
+          const key = axis === 'x' ? point[0].toFixed(3) : point[1].toFixed(3);
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(point);
+        });
+        const keys = Object.keys(groups).sort((a, b) => parseFloat(a) - parseFloat(b));
+        return keys.map(key => {
+          const ring = groups[key];
+          const center = axis === 'x' ? { x: parseFloat(key), y: 0, z: 0 } : { x: 0, y: parseFloat(key), z: 0 };
+          ring.forEach(point => {
+            const dx = point[0] - center.x;
+            const dy = point[1] - center.y;
+            const dz = point[2] - center.z;
+            point.angle = axis === 'x' ? Math.atan2(dz, dy) : Math.atan2(dz, dx);
+          });
+          ring.sort((a, b) => a.angle - b.angle);
+          return ring;
+        });
+      }
+
+      function createPointCloud(points3D) {
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        points3D.forEach(pt => vertices.push(pt[0], pt[1], pt[2]));
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        const material = new THREE.PointsMaterial({ color: getColorFromPicker(), size: 0.05, sizeAttenuation: true });
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+        currentObjects.push(points);
+      }
+
+      function drawRevolution(points3D, axis, switchTab = true) {
+        clearScene();
+        addGrid();
+        addAxes();
+
+        const rings = organizePointsIntoRings(points3D, axis);
+        if (rings.length < 2) {
+          createPointCloud(points3D);
+          if (switchTab) document.querySelector('[data-tab="3d"]').click();
+          return;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const indices = [];
+        const pointsPerRing = rings[0].length;
+
+        rings.forEach(ring => ring.forEach(p => vertices.push(p[0], p[1], p[2])));
+
+        for (let ringIndex = 0; ringIndex < rings.length - 1; ringIndex++) {
+          for (let i = 0; i < pointsPerRing; i++) {
+            const ni = (i + 1) % pointsPerRing;
+            const a = ringIndex * pointsPerRing + i;
+            const b = ringIndex * pointsPerRing + ni;
+            const c = (ringIndex + 1) * pointsPerRing + i;
+            const d = (ringIndex + 1) * pointsPerRing + ni;
+            indices.push(a, b, c, b, d, c);
+          }
+        }
+
+        geometry.setIndex(indices);
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.computeVertexNormals();
+        createMesh(geometry);
+        currentPlotData = { type: '3d-revolution', points: points3D, axis };
+        if (switchTab) document.querySelector('[data-tab="3d"]').click();
+      }
+
+      function drawContourPlot(contourData, switchTab = true) {
+        const container = $('contourPlot');
+        const trace = {
+          z: contourData.z,
+          x: contourData.x,
+          y: contourData.y,
+          type: 'contour',
+          colorscale: 'Viridis',
+          contours: { coloring: 'heatmap' },
+          colorbar: { title: 'z = f(x,y)' }
+        };
+        const layout = {
+          paper_bgcolor: '#1a1e30',
+          plot_bgcolor: '#1a1e30',
+          font: { color: '#ddd' },
+          margin: { l: 55, r: 20, t: 20, b: 45 },
+          xaxis: { title: 'x', gridcolor: '#333' },
+          yaxis: { title: 'y', gridcolor: '#333' }
+        };
+        if (currentContourPlot) Plotly.purge(container);
+        Plotly.newPlot(container, [trace], layout, { responsive: true, displaylogo: false });
+        currentContourPlot = true;
+        currentPlotData = { type: 'contour', data: contourData };
+        if (switchTab) document.querySelector('[data-tab="contour"]').click();
+      }
+
+      function formatComplex(x, y) {
+        const xr = Math.abs(x) < 1e-12 ? 0 : x;
+        const yr = Math.abs(y) < 1e-12 ? 0 : y;
+        return `${xr.toFixed(6)} ${yr >= 0 ? '+' : '-'} ${Math.abs(yr).toFixed(6)}i`;
+      }
+
+      function getComplexShaderBody(exprText) {
+        if (!DescartesInstance) throw new Error('WASM ainda não carregou');
+        if (typeof DescartesInstance.complexToGLSL !== 'function') throw new Error('complexToGLSL não disponível');
+        const glslExpr = DescartesInstance.complexToGLSL(exprText);
+        if (!glslExpr || typeof glslExpr !== 'string') throw new Error('GLSL inválido');
+        return `return ${glslExpr};`;
+      }
+
+      function styleNameToIndex(name) {
+        const styles = ['classic','dark','neon','pastel','phasegrid','checker','redblue','tiles','bubbles','smoothbands','fractal','tetration'];
+        const idx = styles.indexOf(name);
+        return idx >= 0 ? idx : 0;
+      }
+      function computeReferenceOrbit(cx, cy, maxIter){
+
+        referenceOrbit = []
+
+        let zx = 0
+        let zy = 0
+
+        for(let i=0;i<maxIter;i++){
+
+          referenceOrbit.push([zx, zy])
+
+          let x = zx*zx - zy*zy + cx
+          let y = 2*zx*zy + cy
+
+          zx = x
+          zy = y
+
+          if(zx*zx + zy*zy > 4) break
+        }
+        referenceC.x = cx
+        referenceC.y = cy
+
+        complexGL.uniforms.u_refC.value.set(cx, cy)
+      }
+function initComplexThree(exprText = '(z-1)/(z+1)') {
+  const canvas = $('complexPlot');
+  if (!canvas) {
+    console.error('Canvas não encontrado');
+    return;
+  }
+  let dragging = false;
+let lastX = 0;
+let lastY = 0;
+
+canvas.addEventListener("mousedown", e => {
+
+  if(e.button !== 0) return; 
+
+  dragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+
+});
+canvas.addEventListener("mouseup", ()=> dragging=false);
+canvas.addEventListener("mouseleave", ()=> dragging=false);
+
+canvas.addEventListener("mousemove", e => {
+
+  if(!dragging) return;
+
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+
+  lastX = e.clientX;
+  lastY = e.clientY;
+
+  const aspect = canvas.clientWidth / canvas.clientHeight;
+
+  const moveX = dx / canvas.clientWidth * scale * 2.0 * aspect;
+  const moveY = dy / canvas.clientHeight * scale * 2.0;
+
+  center.x -= moveX;
+  center.y += moveY;
+  computeReferenceOrbit(center.x, center.y, maxIter);
+  uploadOrbit();
+  complexGL.uniforms.u_center.value.copy(center);
+
+ 
+});
+    const initialScale = 4.0; 
+
+let center = new THREE.Vector2(0,0);
+let scale = initialScale;
+  if (complexGL && complexGL.destroy) {
+    complexGL.destroy();
+    complexGL = null;
+  }
+  const orbitTex = new THREE.DataTexture(
+    new Float32Array(4096 * 2),
+    4096,
+    1,
+    THREE.RGFormat,
+    THREE.FloatType
+);
+
+orbitTex.needsUpdate = true;
+const uniforms = {
+  u_refC: { value: new THREE.Vector2(0,0) },
+  u_center: { value: new THREE.Vector2(0,0) },
+  u_scale: { value: initialScale },
+  u_resolution: { value: new THREE.Vector2(canvas.clientWidth, canvas.clientHeight) },
+  u_time: { value: 0 },
+  u_style: { value: styleNameToIndex(complexColorStyle) },
+  u_usePerturb: { value: 1 },
+  u_orbitTex: { value: orbitTex },  
+  u_orbitLength: { value: 0 }
+
+};
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  renderer.getContext().texParameteri(
+  renderer.getContext().TEXTURE_2D,
+  renderer.getContext().TEXTURE_MIN_FILTER,
+  renderer.getContext().LINEAR
+);
+  onResize();
+  const scene = new THREE.Scene();
+ 
+  const aspect = canvas.clientWidth / canvas.clientHeight;
+   const camera = new THREE.OrthographicCamera(
+    -initialScale * aspect, initialScale * aspect,
+    initialScale, -initialScale,
+    0.1, 10
+  );
+  camera.position.set(0, 0, 1);
+  camera.zoom = 1;
+  camera.updateProjectionMatrix();
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableRotate = false;
+  controls.enablePan = true;
+  controls.enableZoom = false;
+  controls.zoomSpeed = 0.7;
+  controls.panSpeed = 1.0;
+  controls.screenSpacePanning = true;
+  controls.enabled = false;
+  controls.mouseButtons = {
+    LEFT: null,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: null
+  };
+  const geometry = new THREE.PlaneGeometry(2,2)
+
+  let functionBody;
+  if (/tetration/i.test(exprText)) {
+    functionBody = 'return c_tetration(z);';
+  } else {
+    try {
+      functionBody = getComplexShaderBody(exprText);
+    } catch (e) {
+      console.warn('Erro ao obter GLSL, usando fallback:', e);
+      functionBody = 'return z;';
     }
+  }
 
-    function formatComplex(x, y) {
-      const xr = Math.abs(x) < 1e-12 ? 0 : x;
-      const yr = Math.abs(y) < 1e-12 ? 0 : y;
-      const sign = yr >= 0 ? "+" : "-";
-      return `${xr.toFixed(6)} ${sign} ${Math.abs(yr).toFixed(6)}i`;
+ 
+  const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position.xy,0.0,1.0);
     }
+  `;
 
-    function getComplexShaderBody(exprText) {
-      if (!DescartesInstance) {
-        throw new Error("WASM ainda não carregou");
-      }
-
-      if (typeof DescartesInstance.complexToGLSL !== "function") {
-        console.log("Exports disponíveis:", Object.keys(DescartesInstance));
-        throw new Error("complexToGLSL não foi encontrado nos exports");
-      }
-
-      const glslExpr = DescartesInstance.complexToGLSL(exprText);
-      console.log("GLSL:", glslExpr);
-
-      if (!glslExpr || typeof glslExpr !== "string") {
-        throw new Error("GLSL complexo inválido");
-      }
-
-      return `return ${glslExpr};`;
-    }
-
-    function initComplexGL(exprText = "(z-1)/(z+1)") {
-      const canvas = document.getElementById("complexPlot");
-      if (!canvas) return;
-
-      if (complexGL && complexGL.destroy) {
-        complexGL.destroy();
-        complexGL = null;
-      }
-
-      const gl = canvas.getContext("webgl2", {
-        antialias: true,
-        alpha: false,
-        preserveDrawingBuffer: false
-      });
-
-      if (!gl) {
-        throw new Error("WebGL2 não disponível");
-      }
-
-      const vertexSrc = `#version 300 es
-      in vec2 a_pos;
-      out vec2 v_uv;
-      void main() {
-        v_uv = a_pos * 0.5 + 0.5;
-        gl_Position = vec4(a_pos, 0.0, 1.0);
-      }`;
-
-      const functionBody = getComplexShaderBody(exprText);
-
-      const fragmentSrc = `#version 300 es
-      precision highp float;
-
-      in vec2 v_uv;
-      out vec4 outColor;
-
-      uniform vec2 u_resolution;
-      uniform vec2 u_center;
-      uniform float u_scale;
-      uniform float u_time;
-      uniform int u_style;
-
-      const float PI = 3.1415926535897932384626433832795;
-
+  const fragmentShader = `
+    precision highp float;
+    varying vec2 vUv;
+    uniform vec2 u_refC;
+    uniform vec2 u_resolution;
+    uniform vec2 u_center;
+    uniform float u_scale;
+    uniform float u_time;
+    uniform int u_style;
+    uniform sampler2D u_orbitTex;
+    uniform int u_orbitLength;
+    uniform int u_usePerturb;
+    const float PI = 3.141592653589793;
       vec2 c_add(vec2 a, vec2 b) { return a + b; }
       vec2 c_sub(vec2 a, vec2 b) { return a - b; }
+      vec2 getOrbit(int i){
 
+    float fi = float(i) + 0.5;
+
+    vec2 uv = vec2(
+        fi / 4096.0,
+        0.5
+    );
+
+    return texture2D(u_orbitTex, uv).xy;
+}
       vec2 c_mul(vec2 a, vec2 b) {
         return vec2(
           a.x * b.x - a.y * b.y,
@@ -1371,1049 +1346,615 @@
       vec2 c_theta(vec2 z) { return vec2(c_arg(z), 0.0); }
       vec2 c_joukowsky(vec2 z) { return c_add(z, c_inv(z)); }
       vec2 c_disk(vec2 z) { return vec2(length(z) <= 1.0 ? 1.0 : 0.0, 0.0); }
+vec2 mandelbrotPerturb(vec2 deltaC){
 
-      vec2 c_mandelbrot(vec2 c) {
-        vec2 z = vec2(0.0, 0.0);
-        vec2 lastZ = z;
+    vec2 dz = vec2(0.0);
+    vec2 zr = vec2(0.0);
 
-        const int maxIt = 1000;
-        int it = maxIt;
+    for(int i=0;i<4096;i++){
 
-        for (int i = 0; i < maxIt; ++i) {
-          lastZ = z;
-          z = c_add(c_mul(z, z), c);
+        if(i >= u_orbitLength) break;
 
-          if (dot(z, z) > 256.0) {
-            it = i + 1;
-            break;
-          }
+        zr = getOrbit(i);
+
+        vec2 z = zr + dz;
+
+        if(dot(z,z) > 4.0){
+
+            float mag = length(z);
+
+            float smoothi =
+                float(i) + 1.0
+                - log(log(mag))/log(2.0);
+
+            return vec2(smoothi,mag);
         }
 
-        if (it >= maxIt) {
-          return vec2(-1.0, 0.0);
+        vec2 dz2 = vec2(
+            dz.x*dz.x - dz.y*dz.y,
+            2.0*dz.x*dz.y
+        );
+
+        vec2 twozr_dz = 2.0 * vec2(
+            zr.x*dz.x - zr.y*dz.y,
+            zr.x*dz.y + zr.y*dz.x
+        );
+
+        dz = twozr_dz + dz2 + deltaC;
+
+        if(dot(dz,dz) > dot(zr,zr)){
+            dz = z - zr;
+        }
+    }
+
+    return vec2(-1.0,0.0);
+}
+     vec2 c_mandelbrot(vec2 c){
+
+    if(u_usePerturb == 1){
+
+        vec2 deltaC = c - u_refC;
+
+        vec2 res = mandelbrotPerturb(deltaC);
+
+        if(res.x >= 0.0) return res;
+    }
+
+    vec2 z = vec2(0.0);
+
+    const int MAX_ITER = 8192;
+
+    for(int i=0;i<MAX_ITER;i++){
+
+        z = vec2(
+            z.x*z.x - z.y*z.y,
+            2.0*z.x*z.y
+        ) + c;
+
+        if(dot(z,z) > 4.0){
+
+            float mag = length(z);
+
+            float smoothI =
+                float(i)
+                + 1.0
+                - log(log(mag))/log(2.0);
+
+            return vec2(smoothI,mag);
+        }
+    }
+
+    return vec2(-2.0,0.0);
+}
+            
+      vec2 c_tetration(vec2 z) {
+
+        vec2 w = vec2(1.0, 0.0);
+
+        const int ITER = 20;
+
+        for(int i = 0; i < ITER; i++) {
+
+          w = c_pow(z, w);
+
+          if(dot(w,w) > 1e8) break;
+
         }
 
-        float mag = length(z);
-        float smoothIter = float(it) + 1.0 - log2(log2(max(mag, 1.000001)));
-        return vec2(smoothIter / float(maxIt), length(lastZ));
+        float mag = length(w);
+        float phase = atan(w.y, w.x);
+
+        return vec2(mag, phase);
       }
-
       vec2 c_map(vec2 z) { return z; }
       vec2 c_transform(vec2 z) { return z; }
 
-      vec3 hsv2rgb(vec3 c) {
-        vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);
-        vec3 rgb = clamp(p - 1.0, 0.0, 1.0);
-        return c.z * mix(vec3(1.0), rgb, c.y);
-      }
-
-      vec2 f(vec2 z) {
-        ${functionBody}
-      }
-
-      float gridLine(float x, float freq, float width) {
-        float v = abs(fract(x * freq) - 0.5);
-        return smoothstep(width, 0.0, v);
-      }
-
-      vec3 styleClassic(vec2 w) {
-        float r = c_abs(w);
-        float a = c_arg(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        float lr = log(1.0 + r);
-
-        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
-        float modLinesB = 0.5 + 0.5 * cos(20.0 * lr);
-        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
-
-        float ringMask = smoothstep(0.86, 0.995, modLinesA);
-        float ringMask2 = smoothstep(0.92, 0.999, modLinesB);
-        float phaseMask = smoothstep(0.90, 0.995, phaseLines);
-        float glow = max(max(ringMask, ringMask2), phaseMask);
-
-        float value = 0.12 + 0.88 * (1.0 - 1.0 / (1.0 + lr));
-        vec3 base = hsv2rgb(vec3(hue, 0.96, value));
-        vec3 lineColor = hsv2rgb(vec3(hue, 0.55, 1.0));
-        return mix(base, lineColor, 0.85 * glow);
-      }
-
-      vec3 styleDark(vec2 w) {
-        float r = c_abs(w);
-        float a = c_arg(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        float lr = log(1.0 + r);
-
-        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
-        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
-        float glow = max(
-          smoothstep(0.86, 0.995, modLinesA),
-          smoothstep(0.90, 0.995, phaseLines)
-        );
-
-        float value = 0.05 + 0.70 * (1.0 - 1.0 / (1.0 + lr));
-        vec3 base = hsv2rgb(vec3(hue, 0.85, value));
-        return mix(base, vec3(1.0), 0.18 * glow);
-      }
-
-      vec3 styleNeon(vec2 w) {
-        float r = c_abs(w);
-        float a = c_arg(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        float lr = log(1.0 + r);
-
-        float rings = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(20.0 * lr));
-        float spokes = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
-
-        vec3 base = hsv2rgb(vec3(hue, 1.0, 0.2 + 0.8 * (1.0 - 1.0 / (1.0 + lr))));
-        vec3 glow = hsv2rgb(vec3(fract(hue + 0.08), 0.2, 1.0));
-        return mix(base, glow, max(rings, spokes) * 0.95);
-      }
-
-      vec3 stylePastel(vec2 w) {
-        float r = c_abs(w);
-        float a = c_arg(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        float lr = log(1.0 + r);
-        float value = 0.55 + 0.35 * sin(lr * 2.0);
-
-        vec3 base = hsv2rgb(vec3(hue, 0.45, clamp(value, 0.0, 1.0)));
-        float glow = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
-        return mix(base, vec3(1.0), 0.25 * glow);
-      }
-
-      vec3 stylePhaseGrid(vec2 w) {
-        float a = c_arg(w);
-        float r = c_abs(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        vec3 base = hsv2rgb(vec3(hue, 0.90, 0.10 + 0.85 * (1.0 - 1.0 / (1.0 + log(1.0 + r)))));
-        float mesh = max(
-          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * a)),
-          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * log(1.0 + r)))
-        );
-        return mix(base, vec3(1.0), 0.75 * mesh);
-      }
-
-      vec3 styleChecker(vec2 w) {
-        float u = log(1.0 + c_abs(w)) * 8.0;
-        float v = (c_arg(w) + PI) / (2.0 * PI) * 24.0;
-        float cell = mod(floor(u) + floor(v), 2.0);
-        return mix(vec3(0.03), vec3(0.96), cell);
-      }
-
-      vec3 styleRedBlueGrid(vec2 w) {
-        float re = w.x;
-        float im = w.y;
-        float gx = gridLine(re, 1.6, 0.035);
-        float gy = gridLine(im, 1.6, 0.035);
-        vec3 bg = vec3(0.92);
-        bg = mix(bg, vec3(1.0, 0.1, 0.1), gx);
-        bg = mix(bg, vec3(0.1, 0.2, 1.0), gy);
-        return bg;
-      }
-
-      vec3 styleTiles(vec2 w) {
-        vec2 p = w * 2.5;
-        vec2 g = fract(p) - 0.5;
-        vec2 id = floor(p);
-        float mask = step(0.0, sin(id.x * 1.2) * sin(id.y * 1.2));
-        float box = smoothstep(0.48, 0.42, max(abs(g.x), abs(g.y)));
-        vec3 c1 = vec3(0.82, 0.78, 0.96);
-        vec3 c2 = vec3(0.60, 0.00, 0.62);
-        vec3 c3 = vec3(0.26, 0.00, 0.28);
-        vec3 base = mix(c1, c2, mask);
-        return mix(c3, base, box);
-      }
-
-      vec3 styleBubbles(vec2 w) {
-        float r = c_abs(w);
-        float a = c_arg(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-
-        vec2 p = w * 3.0;
-        vec2 gv = fract(p) - 0.5;
-        float d = length(gv);
-        float circle = smoothstep(0.34, 0.30, d) - smoothstep(0.30, 0.26, d);
-
-        vec3 bg = vec3(0.01, 0.01, 0.03);
-        vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
-        bg += col * circle * 1.5;
-
-        float rings = 0.5 + 0.5 * cos(10.0 * log(1.0 + r));
-        bg += 0.12 * hsv2rgb(vec3(hue, 1.0, 1.0)) * rings;
-
-        return clamp(bg, 0.0, 1.0);
-      }
-
-      vec3 styleSmoothBands(vec2 w) {
-        float a = c_arg(w);
-        float r = c_abs(w);
-        float hue = fract((a + PI) / (2.0 * PI));
-        float bands = floor(fract(hue + log(1.0 + r) * 0.25) * 18.0) / 18.0;
-        return hsv2rgb(vec3(bands, 0.95, 0.95));
-      }
-
-      vec3 styleFractal(vec2 w) {
-        if (w.x < 0.0) return vec3(0.0);
-
-        float t = clamp(w.x, 0.0, 1.0);
-        float aux = log(1.0 + max(w.y, 0.0));
-
-        float hue = fract(0.95 + 8.0 * t + 0.08 * aux);
-        float sat = 0.75 + 0.25 * sin(10.0 * t + aux);
-        float val = 0.15 + 0.85 * smoothstep(0.0, 1.0, pow(t, 0.65));
-
-        vec3 base = hsv2rgb(vec3(hue, sat, val));
-        float glow = 0.5 + 0.5 * cos(40.0 * t - 2.0 * aux);
-        base += 0.12 * glow * vec3(1.0, 0.9, 0.7);
-
-        return clamp(base, 0.0, 1.0);
-      }
+ 
 
 
-      vec3 domainColor(vec2 w) {
-        if (u_style == 0) return styleClassic(w);
-        if (u_style == 1) return styleDark(w);
-        if (u_style == 2) return styleNeon(w);
-        if (u_style == 3) return stylePastel(w);
-        if (u_style == 4) return stylePhaseGrid(w);
-        if (u_style == 5) return styleChecker(w);
-        if (u_style == 6) return styleRedBlueGrid(w);
-        if (u_style == 7) return styleTiles(w);
-        if (u_style == 8) return styleBubbles(w);
-        if (u_style == 9) return styleSmoothBands(w);
-        if (u_style == 10) return styleFractal(w);
-        return styleClassic(w);
-      }
+    vec2 f(vec2 z) {
+      ${functionBody}
+    }
 
-      void main() {
-        vec2 p = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
-        p.x *= u_resolution.x / u_resolution.y;
+    vec3 hsv2rgb(vec3 c) {
+      vec3 p = abs(fract(c.xxx + vec3(0., 2./3., 1./3.)) * 6. - 3.);
+      return c.z * mix(vec3(1.), clamp(p - 1., 0., 1.), c.y);
+    }
 
-        vec2 z = u_center + p * u_scale;
-        vec2 w = f(z);
+    vec3 styleClassic(vec2 w) {
+      float a = c_arg(w), r = c_abs(w), lr = log(1. + r);
+      float hue = fract((a + PI) / (2. * PI));
+      float val = 0.15 + 0.85 * (1. - 1. / (1. + lr));
+      return hsv2rgb(vec3(hue, 0.95, val));
+    }
 
-        if (abs(w.x) > 1e19 || abs(w.y) > 1e19 || isnan(w.x) || isnan(w.y)) {
-          outColor = vec4(0.02, 0.02, 0.02, 1.0);
+    vec3 styleDark(vec2 w) { return styleClassic(w) * 0.55; }
+    vec3 styleNeon(vec2 w) { return abs(sin(w.xyx * 2. + u_time)); }
+    vec3 stylePastel(vec2 w) { return vec3(0.7+0.3*cos(w.x+u_time), 0.5+0.5*cos(w.y+1.), 0.8+0.2*cos(w.x*w.y)); }
+    vec3 stylePhaseGrid(vec2 w) {
+      float g = sin(c_arg(w)*12.) * sin(log(c_abs(w)+1.)*8.);
+      return vec3(0.3,0.5,0.8) + 0.2*g;
+    }
+    vec3 styleChecker(vec2 w) {
+      float chk = mod(floor(w.x*4.) + floor(w.y*4.), 2.);
+      return vec3(chk);
+    }
+    vec3 styleRedBlueGrid(vec2 w) { return vec3(0.5 + 0.5*sin(w.x), 0.2, 0.5 + 0.5*cos(w.y)); }
+    vec3 styleTiles(vec2 w) { return fract(w.xyx * 0.5); }
+    vec3 styleBubbles(vec2 w) { return 0.5 + 0.5*cos(w.xyx*3.1415 + u_time); }
+    vec3 styleSmoothBands(vec2 w) { return sin(w.xyx * 2. + u_time) * 0.5 + 0.5; }
+    vec3 styleFractal(vec2 w) {
+      if (w.x < 0.0) return vec3(0.0);
+      float t = w.x / 25.0;
+      float aux = log(1.0 + max(w.y, 0.0));
+      float hue = fract(0.95 + 8.0 * t + 0.08 * aux);
+      float sat = 0.75 + 0.25 * sin(10.0 * t + aux);
+      float val = 0.15 + 0.85 * smoothstep(0.0, 1.0, pow(t, 0.65));
+      vec3 base = hsv2rgb(vec3(hue, sat, val));
+      float glow = 0.5 + 0.5 * cos(40.0 * t - 2.0 * aux);
+      base += 0.12 * glow * vec3(1.0, 0.9, 0.7);
+      return clamp(base, 0.0, 1.0);
+    }
+    vec3 styleTetration(vec2 w) {
+      vec2 t = c_tetration(w);
+      float iter = t.x;
+      float mag = t.y;
+      return hsv2rgb(vec3(iter * 0.8 + 0.2, 0.9, 0.4 + 0.5 * sin(mag)));
+    }
+
+    vec3 domainColor(vec2 w) {
+      if (u_style == 0) return styleClassic(w);
+      if (u_style == 1) return styleDark(w);
+      if (u_style == 2) return styleNeon(w);
+      if (u_style == 3) return stylePastel(w);
+      if (u_style == 4) return stylePhaseGrid(w);
+      if (u_style == 5) return styleChecker(w);
+      if (u_style == 6) return styleRedBlueGrid(w);
+      if (u_style == 7) return styleTiles(w);
+      if (u_style == 8) return styleBubbles(w);
+      if (u_style == 9) return styleSmoothBands(w);
+      if (u_style == 10) return styleFractal(w);
+      if (u_style == 11) return styleTetration(w);
+      return styleClassic(w);
+    }
+
+    void main() {
+
+      vec2 uv = vUv * 2.0 - 1.0;
+      uv.x *= u_resolution.x / u_resolution.y;
+
+      vec2 z = u_center + uv * u_scale;
+
+      vec2 w = f(z);
+
+      if (abs(w.x) > 1e18 || abs(w.y) > 1e18 || (w.x != w.x) || (w.y != w.y)) {
+          gl_FragColor = vec4(0.0,0.0,0.0,1.0);
           return;
-        }
-
-        vec3 col = domainColor(w);
-
-        float axisX = exp(-80.0 * abs(z.y));
-        float axisY = exp(-80.0 * abs(z.x));
-        col += 0.05 * vec3(axisX + axisY);
-
-        outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
-      }`;
-
-      function compile(type, src) {
-        const sh = gl.createShader(type);
-        gl.shaderSource(sh, src);
-        gl.compileShader(sh);
-
-        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-          const log = gl.getShaderInfoLog(sh);
-          gl.deleteShader(sh);
-          throw new Error(log);
-        }
-        return sh;
       }
 
-      const vs = compile(gl.VERTEX_SHADER, vertexSrc);
-      const fs = compile(gl.FRAGMENT_SHADER, fragmentSrc);
-
-      const program = gl.createProgram();
-      gl.attachShader(program, vs);
-      gl.attachShader(program, fs);
-      gl.linkProgram(program);
-
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        const log = gl.getProgramInfoLog(program);
-        throw new Error(log);
-      }
-
-      const quad = new Float32Array([
-        -1, -1,
-         1, -1,
-        -1,  1,
-        -1,  1,
-         1, -1,
-         1,  1
-      ]);
-
-      const vao = gl.createVertexArray();
-      const vbo = gl.createBuffer();
-
-      gl.bindVertexArray(vao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-      gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
-
-      const locPos = gl.getAttribLocation(program, "a_pos");
-      gl.enableVertexAttribArray(locPos);
-      gl.vertexAttribPointer(locPos, 2, gl.FLOAT, false, 0, 0);
-
-      const uResolution = gl.getUniformLocation(program, "u_resolution");
-      const uCenter = gl.getUniformLocation(program, "u_center");
-      const uScale = gl.getUniformLocation(program, "u_scale");
-      const uTime = gl.getUniformLocation(program, "u_time");
-      const uStyle = gl.getUniformLocation(program, "u_style");
-
-      const state = {
-        gl,
-        canvas,
-        program,
-        vao,
-        vbo,
-        vs,
-        fs,
-        style: complexColorStyle,
-        centerX: 0.0,
-        centerY: 0.0,
-        scale: 4.0,
-        dragging: false,
-        lastX: 0,
-        lastY: 0,
-        exprText,
-        time0: performance.now()
-      };
-
-      let complexQuality = /mandelbrot/i.test(exprText) ? 8.5 : 4.0;
-
-      function getComplexDpr() {
-        const baseDpr = Math.max(1, window.devicePixelRatio || 1);
-        return Math.min(8.0, baseDpr * complexQuality);
-      }
-
-      function resize() {
-        const rect = canvas.getBoundingClientRect();
-        const dpr = getComplexDpr();
-        const w = Math.max(1, Math.floor(rect.width * dpr));
-        const h = Math.max(1, Math.floor(rect.height * dpr));
-
-        if (canvas.width !== w || canvas.height !== h) {
-          canvas.width = w;
-          canvas.height = h;
-        }
-
-        gl.viewport(0, 0, w, h);
-      }
-
-      function screenToComplex(px, py) {
-        const w = canvas.width;
-        const h = canvas.height;
-        const nx = (px / w) * 2.0 - 1.0;
-        const ny = 1.0 - (py / h) * 2.0;
-        const aspect = w / h;
-
-        return {
-          x: state.centerX + nx * state.scale * aspect,
-          y: state.centerY + ny * state.scale
-        };
-      }
-
-      function updateHud(mouseX = null, mouseY = null) {
-        const exprEl = document.getElementById("complexExpr");
-        const mouseEl = document.getElementById("complexMouse");
-        const viewEl = document.getElementById("complexView");
-
-        if (exprEl) {
-          exprEl.textContent = `f(z) = ${state.exprText}`;
-        }
-
-        if (mouseEl && mouseX !== null && mouseY !== null) {
-          const z = screenToComplex(mouseX, mouseY);
-          mouseEl.textContent = `z = ${formatComplex(z.x, z.y)}`;
-        }
-
-        if (viewEl) {
-          viewEl.textContent =
-            `centro: ${formatComplex(state.centerX, state.centerY)} | escala: ${state.scale.toFixed(6)} | qualidade: ${complexQuality.toFixed(2)}x`;
-        }
-      }
-
-      function render(mouseX = null, mouseY = null) {
-        resize();
-
-        gl.useProgram(program);
-        gl.bindVertexArray(vao);
-
-        const styleMap = {
-          classic: 0,
-          dark: 1,
-          neon: 2,
-          pastel: 3,
-          phasegrid: 4,
-          checker: 5,
-          redblue: 6,
-          tiles: 7,
-          bubbles: 8,
-          smoothbands: 9,
-          fractal: 10
-        };
-
-        gl.uniform1i(uStyle, styleMap[state.style] ?? 0);
-        gl.uniform2f(uResolution, canvas.width, canvas.height);
-        gl.uniform2f(uCenter, state.centerX, state.centerY);
-        gl.uniform1f(uScale, state.scale);
-        gl.uniform1f(uTime, (performance.now() - state.time0) * 0.001);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        updateHud(mouseX, mouseY);
-      }
-
-      function onMouseDown(e) {
-        if (e.button !== 0) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const dpr = getComplexDpr();
-
-        state.dragging = true;
-        state.lastX = (e.clientX - rect.left) * dpr;
-        state.lastY = (e.clientY - rect.top) * dpr;
-        canvas.style.cursor = "grabbing";
-      }
-
-      function onMouseMove(e) {
-        const rect = canvas.getBoundingClientRect();
-        const dpr = getComplexDpr();
-        const x = (e.clientX - rect.left) * dpr;
-        const y = (e.clientY - rect.top) * dpr;
-
-        if (!state.dragging) {
-          updateHud(x, y);
-          return;
-        }
-
-        const dx = x - state.lastX;
-        const dy = y - state.lastY;
-        const aspect = canvas.width / canvas.height;
-
-        state.centerX -= (dx / canvas.width) * 2.0 * state.scale * aspect;
-        state.centerY += (dy / canvas.height) * 2.0 * state.scale;
-
-        state.lastX = x;
-        state.lastY = y;
-        render(x, y);
-      }
-
-      function onMouseUp() {
-        state.dragging = false;
-        canvas.style.cursor = "crosshair";
-      }
-
-      function onWheel(e) {
-        e.preventDefault();
-
-        const rect = canvas.getBoundingClientRect();
-        const dpr = getComplexDpr();
-        const mx = (e.clientX - rect.left) * dpr;
-        const my = (e.clientY - rect.top) * dpr;
-
-        const before = screenToComplex(mx, my);
-        const factor = e.deltaY < 0 ? 0.88 : 1.14;
-
-        state.scale *= factor;
-
-        const after = screenToComplex(mx, my);
-        state.centerX += before.x - after.x;
-        state.centerY += before.y - after.y;
-
-        render(mx, my);
-      }
-
-      function onDblClick() {
-        state.centerX = 0.0;
-        state.centerY = 0.0;
-        state.scale = 4.0;
-        render();
-      }
-
-      function onResize() {
-        render();
-      }
-
-      canvas.addEventListener("mousedown", onMouseDown);
-      canvas.addEventListener("mousemove", onMouseMove);
-      canvas.addEventListener("wheel", onWheel, { passive: false });
-      canvas.addEventListener("dblclick", onDblClick);
-      window.addEventListener("mouseup", onMouseUp);
-      window.addEventListener("resize", onResize);
-
-      complexGL = {
-        render,
-        resetView() {
-          state.centerX = 0.0;
-          state.centerY = 0.0;
-          state.scale = 4.0;
-          render();
-        },
-        setExprText(txt) {
-          state.exprText = txt;
-          render();
-        },
-        setColorStyle(style) {
-          state.style = style;
-          render();
-        },
-        setQuality(q) {
-          complexQuality = Math.max(1.0, Math.min(8.0, q));
-          render();
-        },
-        destroy() {
-          canvas.removeEventListener("mousedown", onMouseDown);
-          canvas.removeEventListener("mousemove", onMouseMove);
-          canvas.removeEventListener("wheel", onWheel);
-          canvas.removeEventListener("dblclick", onDblClick);
-          window.removeEventListener("mouseup", onMouseUp);
-          window.removeEventListener("resize", onResize);
-
-          gl.deleteBuffer(vbo);
-          gl.deleteVertexArray(vao);
-          gl.deleteProgram(program);
-          gl.deleteShader(vs);
-          gl.deleteShader(fs);
-        }
-      };
-
-      currentPlotData = { type: 'complex' };
-      render();
-    }
-
-    function drawContourPlot(contourData) {
-      const container = document.getElementById('contourPlot');
-
-      if (!contourData.x || !contourData.y || !contourData.z) {
-        throw new Error("Dados de contorno em formato inválido");
-      }
-
-      const trace = {
-        z: contourData.z,
-        x: contourData.x,
-        y: contourData.y,
-        type: 'contour',
-        colorscale: 'Viridis',
-        contours: { coloring: 'heatmap' },
-        colorbar: { title: 'z = f(x,y)' }
-      };
-
-      const layout = {
-        title: 'contour of : ' + document.getElementById('expr').value,
-        paper_bgcolor: '#1e1e1e',
-        plot_bgcolor: '#1e1e1e',
-        font: { color: '#e0e0e0' },
-        xaxis: { title: 'x', gridcolor: '#444' },
-        yaxis: { title: 'y', gridcolor: '#444' }
-      };
-
-      if (currentContourPlot) Plotly.purge(container);
-      Plotly.newPlot(container, [trace], layout, { responsive: true });
-      currentContourPlot = true;
-    }
-
-    function drawSurface2DFromData(surfaceData) {
-      clearScene();
-      if (showGrid) addGrid();
-      if (showAxes) addAxes();
-
-      const geometry = new THREE.BufferGeometry();
-      const vertices = [];
-      const indices = [];
-
-      const xArray = surfaceData.x;
-      const yArray = surfaceData.y;
-      const zMatrix = surfaceData.z;
-
-      for (let i = 0; i < yArray.length; i++) {
-        for (let j = 0; j < xArray.length; j++) {
-          vertices.push(xArray[j], zMatrix[i][j], yArray[i]);
-        }
-      }
-
-      for (let i = 0; i < yArray.length - 1; i++) {
-        for (let j = 0; j < xArray.length - 1; j++) {
-          const a = i * xArray.length + j;
-          const b = i * xArray.length + j + 1;
-          const c = (i + 1) * xArray.length + j;
-          const d = (i + 1) * xArray.length + j + 1;
-
-          indices.push(a, b, c);
-          indices.push(b, d, c);
-        }
-      }
-
-      geometry.setIndex(indices);
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      geometry.computeVertexNormals();
-
-      createMesh(geometry);
-      currentPlotData = { type: '3d', surfaceType: '2d', points: surfaceData };
-    }
-
-    function drawRevolution(points3D, axis) {
-      clearScene();
-      if (showGrid) addGrid();
-      if (showAxes) addAxes();
-
-      const rings = organizePointsIntoRings(points3D, axis);
-      if (rings.length < 2) {
-        createPointCloud(points3D);
-        return;
-      }
-
-      const geometry = new THREE.BufferGeometry();
-      const vertices = [];
-      const indices = [];
-
-      const pointsPerRing = rings[0].length;
-      const numRings = rings.length;
-
-      rings.forEach(ring => {
-        ring.forEach(point => {
-          vertices.push(point[0], point[1], point[2]);
-        });
-      });
-
-      for (let ringIndex = 0; ringIndex < numRings - 1; ringIndex++) {
-        for (let pointIndex = 0; pointIndex < pointsPerRing; pointIndex++) {
-          const nextPointIndex = (pointIndex + 1) % pointsPerRing;
-
-          indices.push(
-            ringIndex * pointsPerRing + pointIndex,
-            ringIndex * pointsPerRing + nextPointIndex,
-            (ringIndex + 1) * pointsPerRing + pointIndex
-          );
-
-          indices.push(
-            ringIndex * pointsPerRing + nextPointIndex,
-            (ringIndex + 1) * pointsPerRing + nextPointIndex,
-            (ringIndex + 1) * pointsPerRing + pointIndex
-          );
-        }
-      }
-
-      geometry.setIndex(indices);
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      geometry.computeVertexNormals();
-
-      createMesh(geometry);
-      currentPlotData = { type: '3d', axis, points: points3D };
-    }
-
-    function drawSolidFromData(solidData) {
-      clearScene();
-      if (showGrid) addGrid();
-      if (showAxes) addAxes();
-
-      const geometry = new THREE.BufferGeometry();
-      const vertices = [];
-
-      solidData.z.forEach((row, i) => {
-        row.forEach((z, j) => {
-          vertices.push(solidData.x[j], z, solidData.y[i]);
-        });
-      });
-
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-      createMesh(geometry);
-      currentPlotData = { type: '3d', points: solidData };
-    }
-
-    function createMesh(geometry) {
-      const baseColor = getColorFromPicker();
-
-      let material;
-      switch (currentMaterialType) {
-        case 'plastic':
-          material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            shininess: 30,
-            wireframe: showWireframe,
-            side: THREE.DoubleSide
-          });
-          break;
-        case 'metal':
-          material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            shininess: 100,
-            specular: 0x555555,
-            wireframe: showWireframe,
-            side: THREE.DoubleSide
-          });
-          break;
-        case 'glass':
-          material = new THREE.MeshPhongMaterial({
-            color: baseColor,
-            transparent: true,
-            opacity: 0.7,
-            shininess: 90,
-            specular: 0xffffff,
-            wireframe: showWireframe,
-            side: THREE.DoubleSide
-          });
-          break;
-      }
-
-      currentMesh = new THREE.Mesh(geometry, material);
-      currentMesh.castShadow = true;
-      currentMesh.receiveShadow = true;
-
-      scene.add(currentMesh);
-      currentObjects.push(currentMesh);
-
-      updateColorMode();
-      document.querySelector('[data-tab="3d"]').click();
-    }
-
-    function organizePointsIntoRings(points3D, axis) {
-      const rings = [];
-      const groups = {};
-
-      points3D.forEach(point => {
-        const key = axis === 'x' ? point[0].toFixed(3) : point[1].toFixed(3);
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(point);
-      });
-
-      const sortedKeys = Object.keys(groups).sort((a, b) => parseFloat(a) - parseFloat(b));
-
-      sortedKeys.forEach(key => {
-        const ringPoints = groups[key];
-        const center = axis === 'x'
-          ? { x: parseFloat(key), y: 0, z: 0 }
-          : { x: 0, y: parseFloat(key), z: 0 };
-
-        ringPoints.forEach(point => {
-          const dx = point[0] - center.x;
-          const dy = point[1] - center.y;
-          const dz = point[2] - center.z;
-          point.angle = axis === 'x' ? Math.atan2(dz, dy) : Math.atan2(dz, dx);
-        });
-
-        ringPoints.sort((a, b) => a.angle - b.angle);
-        rings.push(ringPoints);
-      });
-
-      return rings;
-    }
-
-    function createPointCloud(points3D) {
-      const geometry = new THREE.BufferGeometry();
-      const vertices = [];
-
-      points3D.forEach(pt => {
-        vertices.push(pt[0], pt[1], pt[2]);
-      });
-
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-      const material = new THREE.PointsMaterial({
-        color: getColorFromPicker(),
-        size: 0.05,
-        sizeAttenuation: true
-      });
-
-      const points = new THREE.Points(geometry, material);
-      scene.add(points);
-      currentObjects.push(points);
-    }
-
-    function renderAnalysis(data, target) {
-      if (!target) return;
-
-      let html = `<div class="analysis-title">📊 Análise da Função</div>`;
-
-      for (let key in data) {
-        let val = data[key];
-        if (typeof val === "boolean") val = val ? "✅ Sim" : "❌ Não";
-        else if (typeof val === "number") val = isFinite(val) ? val.toFixed(6) : "indefinido";
-        else if (val === null) val = "indefinido";
-
-        html += `
-          <div class="analysis-item">
-            <div class="analysis-label">${key}:</div>
-            <div class="analysis-value">${val}</div>
-          </div>
-        `;
-      }
-
-      target.innerHTML = html;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initThreeJS();
-      initTabs();
-      initPlotControls();
-      renderFunctionList();
-      initComplexStyleControls();
-
-      const exprInput = document.getElementById('expr');
-      const runBtn = document.getElementById('runBtn');
-
-      if (exprInput) {
-        exprInput.addEventListener('keydown', e => {
-          if (e.key === 'Enter') runRepl();
-        });
-      }
-
-      if (runBtn) {
-        runBtn.addEventListener('click', runRepl);
-      }
-
-      Descartes().then(mod => {
-        DescartesInstance = mod;
-
-        console.log("Módulo carregado");
-        console.log("complexToGLSL existe?", typeof mod.complexToGLSL);
-        console.log("repl existe?", typeof mod.repl);
-        console.log("Exports disponíveis:", Object.keys(mod));
-
-        const history = document.getElementById('history');
-        if (history) {
-          history.innerHTML += `
-            <div class="history-entry">
-              <div class="input-expr">~[math]> Sistema inicializado</div>
-              <div class="output-result">Módulo WASM carregado com sucesso</div>
-            </div>
-          `;
-          history.scrollTop = history.scrollHeight;
-        }
-
-        if (typeof mod.complexToGLSL === "function") {
-          try {
-            initComplexGL("(z-1)/(z+1)");
-          } catch (e) {
-            console.error("Erro ao iniciar complex GL:", e);
+      vec3 col;
+
+      if(u_style == 10){
+          if(w.x < 0.0) col = vec3(0.0);
+          else{
+              float t = w.x / 256.0;
+              col = hsv2rgb(vec3(0.95 + 8.0*t, 0.8, 0.3 + 0.7*t));
           }
-        } else {
-          console.error("complexToGLSL não encontrado nos exports do WASM");
-        }
-      }).catch(err => {
-        console.error("Falha ao carregar o módulo WASM:", err);
-      });
-    });
+      }else{
+          col = domainColor(w);
+      }
+      float ax = exp(-80.0 * abs(z.y));
+      float ay = exp(-80.0 * abs(z.x));
+      col += 0.05 * vec3(ax + ay);
 
-    function runRepl() {
-      const exprRaw = document.getElementById('expr').value.trim();
-      if (!DescartesInstance || !exprRaw) return;
+      gl_FragColor = vec4(clamp(col,0.0,1.0),1.0);
+    }
+  `;
 
-      const history = document.getElementById('history');
-      const analysisBox = document.getElementById('analysis');
+  const material = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    uniforms: uniforms,
+    side: THREE.DoubleSide
+  });
 
-      if (exprRaw === "clear2d") {
-        plot2DSeries = [];
-        renderFunctionList();
-        Plotly.purge(document.getElementById('plot2d'));
-        if (history) {
-          history.innerHTML += `<div class="output-result">Gráfico 2D limpo</div>`;
-          history.scrollTop = history.scrollHeight;
-        }
-        return;
+  const mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  complexGL = {
+    renderer, scene, camera, controls, mesh, material, uniforms,
+    exprText,
+    animationId: null,
+    destroy() {
+      if (this.animationId) cancelAnimationFrame(this.animationId);
+      renderer.dispose();
+      material.dispose();
+      geometry.dispose();
+    },
+    setColorStyle(styleName) {
+      this.uniforms.u_style.value = styleNameToIndex(styleName);
+    },
+    resetView() {
+      camera.position.set(0, 0, 1);
+      camera.zoom = 1;
+      controls.target.set(0, 0, 0);
+      controls.update();
+      camera.updateProjectionMatrix();
+      this.updateUniforms();
+    },
+    updateUniforms() {
+      this.uniforms.u_center.value.copy(center);
+      this.uniforms.u_scale.value = scale;
+      this.uniforms.u_resolution.value.set(
+  renderer.domElement.clientWidth,
+  renderer.domElement.clientHeight
+);
+    },
+    render() {
+      this.updateUniforms();
+      renderer.render(scene, camera);
+    }
+  };
+function uploadOrbit(){
+
+if(!complexGL) return;
+
+const tex = complexGL.uniforms?.u_orbitTex?.value;
+if(!tex || !tex.image || !tex.image.data) return;
+
+const data = tex.image.data;
+const maxOrbit = tex.image.width;
+
+for(let i=0;i<maxOrbit;i++){
+
+if(i < referenceOrbit.length){
+
+  data[i*2+0] = referenceOrbit[i][0];
+  data[i*2+1] = referenceOrbit[i][1];
+
+}else{
+
+  data[i*2+0] = 0;
+  data[i*2+1] = 0;
+
+}
+
+
+}
+
+tex.needsUpdate = true;
+
+complexGL.uniforms.u_orbitLength.value =
+Math.min(referenceOrbit.length,maxOrbit);
+}
+
+
+  function onMouseMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const aspect = canvas.clientWidth / canvas.clientHeight;
+    const scale = initialScale / camera.zoom;
+    const nx = (x / rect.width) * 2 - 1;
+    const ny = -(y / rect.height) * 2 + 1;
+    const zx = center.x + nx * scale * aspect;
+    const zy = center.y + ny * scale;
+    $('complexMouse').textContent = `z = ${formatComplex(zx, zy)}`;
+    $('complexView').textContent = `centro: ${formatComplex(center.x, center.y)} | escala: ${scale.toFixed(6)}`;
+  }
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener("wheel", e=>{
+
+    e.preventDefault();
+
+    const rect = canvas.getBoundingClientRect();
+
+    const mx = (e.clientX - rect.left) / rect.width;
+    const my = (e.clientY - rect.top) / rect.height;
+
+    const aspect = canvas.clientWidth / canvas.clientHeight;
+
+    const zx = center.x + (mx*2-1) * scale * aspect;
+    const zy = center.y - (my*2-1) * scale;
+
+    const zoom = Math.exp(e.deltaY * 0.0015);
+    scale *= zoom;
+
+    center.x = zx + (center.x - zx) * zoom;
+    center.y = zy + (center.y - zy) * zoom;
+
+ 
+    complexGL.uniforms.u_center.value.copy(center);
+    complexGL.uniforms.u_scale.value = scale;
+
+    computeReferenceOrbit(center.x, center.y, maxIter);
+    uploadOrbit();
+    complexGL.updateUniforms();
+  });
+  canvas.addEventListener('dblclick', () => {
+    complexGL.resetView();
+  });
+
+   function onResize(){
+
+    const width = canvas.parentElement.clientWidth;
+    const height = canvas.parentElement.clientHeight;
+
+    renderer.setSize(width,height,false);
+
+    uniforms?.u_resolution.value.set(width,height);
+
+  }
+  window.addEventListener('resize', onResize);
+ 
+function animate(){
+
+  complexGL.animationId = requestAnimationFrame(animate);
+
+  const u = complexGL.uniforms;
+
+  u.u_time.value = 0
+  u.u_scale.value = scale;
+  u.u_center.value.copy(center);
+
+  u.u_resolution.value.set(
+    complexGL.renderer.domElement.clientWidth,
+    complexGL.renderer.domElement.clientHeight
+  );
+
+  complexGL.controls.update();
+
+  complexGL.renderer.render(
+    complexGL.scene,
+    complexGL.camera
+  );
+}
+  animate();
+
+  complexGL.cleanup = () => {
+    canvas.removeEventListener('mousemove', onMouseMove);
+    canvas.removeEventListener('dblclick', complexGL.resetView);
+    window.removeEventListener('resize', onResize);
+  };
+  const origDestroy = complexGL.destroy;
+  complexGL.destroy = () => {
+    complexGL.cleanup();
+    origDestroy.call(complexGL);
+  };
+
+  $('complexExpr').textContent = `f(z) = ${exprText}`;
+  complexGL.updateUniforms();
+  console.log('initComplexThree finalizado');
+  computeReferenceOrbit(0,0,maxIter);
+  uploadOrbit();
+}
+      function initControls() {
+        $('resetView').addEventListener('click', () => {
+          if (document.querySelector('.tab.active')?.dataset.tab === 'complex') {
+            complexGL?.resetView?.();
+          } else {
+            orbitControls?.reset?.();
+            camera.position.set(8, 6, 8);
+          }
+        });
+
+        $('toggleGrid').addEventListener('click', () => {
+          showGrid = !showGrid;
+          $('toggleGrid').classList.toggle('active', showGrid);
+          updateScene();
+        });
+
+        $('toggleAxes').addEventListener('click', () => {
+          showAxes = !showAxes;
+          $('toggleAxes').classList.toggle('active', showAxes);
+          updateScene();
+        });
+
+        $('toggleWireframe').addEventListener('click', () => {
+          showWireframe = !showWireframe;
+          $('toggleWireframe').classList.toggle('active', showWireframe);
+          updateMaterial();
+        });
+
+        $('toggleAnimation').addEventListener('click', () => {
+          isAnimating = !isAnimating;
+          $('toggleAnimation').classList.toggle('active', isAnimating);
+        });
+
+        $('plasticMaterial').addEventListener('click', () => {
+          currentMaterialType = 'plastic';
+          setActiveButtons(['plasticMaterial','metalMaterial','glassMaterial'], 'plasticMaterial');
+          updateMaterial();
+        });
+        $('metalMaterial').addEventListener('click', () => {
+          currentMaterialType = 'metal';
+          setActiveButtons(['plasticMaterial','metalMaterial','glassMaterial'], 'metalMaterial');
+          updateMaterial();
+        });
+        $('glassMaterial').addEventListener('click', () => {
+          currentMaterialType = 'glass';
+          setActiveButtons(['plasticMaterial','metalMaterial','glassMaterial'], 'glassMaterial');
+          updateMaterial();
+        });
+
+        $('solidColor').addEventListener('click', () => {
+          currentColorMode = 'solid';
+          setActiveButtons(['solidColor','rainbowColor','heightColor'], 'solidColor');
+          updateColorMode();
+        });
+        $('rainbowColor').addEventListener('click', () => {
+          currentColorMode = 'rainbow';
+          setActiveButtons(['solidColor','rainbowColor','heightColor'], 'rainbowColor');
+          updateColorMode();
+        });
+        $('heightColor').addEventListener('click', () => {
+          currentColorMode = 'height';
+          setActiveButtons(['solidColor','rainbowColor','heightColor'], 'heightColor');
+          updateColorMode();
+        });
+
+        $('colorPicker').addEventListener('input', () => updateMaterial());
+
+        document.querySelectorAll('#complexStyleControls [data-cstyle]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('#complexStyleControls [data-cstyle]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            complexColorStyle = btn.dataset.cstyle;
+            if (complexGL && complexGL.setColorStyle) {
+              complexGL.setColorStyle(complexColorStyle);
+            }
+          });
+        });
       }
 
-      const adjustedDomain = adjustDomainForExpression(exprRaw);
-      analyzeExpression(exprRaw);
+      function runRepl() {
+        const exprRaw = $('expr').value.trim();
+        if (!exprRaw) return;
+        if (!DescartesInstance) {
+          addHistory(exprRaw, 'Módulo WASM ainda não carregou.', 'error');
+          return;
+        }
 
-      if (history) {
-        history.innerHTML += `
-          <div class="history-entry">
-            <div class="input-expr">~[math]> ${exprRaw}</div>
-          </div>
-        `;
-        history.scrollTop = history.scrollHeight;
-      }
+        if (exprRaw === 'clear2d') {
+          plot2DSeries = [];
+          renderFunctionList();
+          Plotly.purge($('plot2d'));
+          addHistory(exprRaw, 'Gráfico 2D limpo.', 'success');
+          return;
+        }
 
-      if (exprRaw.startsWith("domaincolor ") || exprRaw.startsWith("complexplot ")) {
-        try {
-          const prefix = exprRaw.startsWith("domaincolor ") ? "domaincolor " : "complexplot ";
+        const domain = adjustDomainForExpression(exprRaw);
+        const analysis = analyzeExpression(exprRaw);
+        setAnalysis(`[${domain.min}, ${domain.max}]`, analysis.type, analysis.symmetry, domain.msg);
+
+        if (/^(domaincolor|complexplot)\s+/i.test(exprRaw)) {
+          const prefix = exprRaw.toLowerCase().startsWith('domaincolor ') ? 'domaincolor ' : 'complexplot ';
           const expr = exprRaw.substring(prefix.length).trim();
 
-          if (/mandelbrot/i.test(expr)) {
-            complexColorStyle = 'fractal';
-          }
+          if (/tetration/i.test(expr)) complexColorStyle = 'tetration';
+          else if (/mandelbrot/i.test(expr)) complexColorStyle = 'fractal';
 
-          const wrap = document.getElementById('complexStyleControls');
-          if (wrap) {
-            wrap.querySelectorAll('[data-cstyle]').forEach(x => {
-              x.classList.toggle('active', x.getAttribute('data-cstyle') === complexColorStyle);
-            });
-          }
+          document.querySelectorAll('#complexStyleControls [data-cstyle]').forEach(b => {
+            b.classList.toggle('active', b.dataset.cstyle === complexColorStyle);
+          });
 
-          initComplexGL(expr);
-
-          if (/mandelbrot/i.test(expr) && complexGL && complexGL.setQuality) {
-            complexGL.setQuality(4.0);
-          }
-
-          currentPlotData = { type: 'complex' };
-          document.querySelector('[data-tab="complex"]').click();
-
-          if (history) {
-            history.innerHTML += `<div class="output-result">Domain coloring WebGL renderizado</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-
-          renderAnalysis({
-            expr: exprRaw,
-            tipo: "Função complexa (GPU)",
-            saída: "fragment shader"
-          }, analysisBox);
-        } catch (e) {
-          if (history) {
-            history.innerHTML += `<div class="output-result error">Erro no gráfico complexo: ${e.message}</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-          console.error("Erro complexo:", e);
-        }
-        return;
-      }
-
-      if (exprRaw.startsWith("contour ")) {
-        const expr = exprRaw.substring(8).trim();
-        try {
-          const contourDataStr = DescartesInstance.contourMap(expr, adjustedDomain, adjustedDomain, 50);
-          const contourData = JSON.parse(contourDataStr);
-
-          drawContourPlot(contourData);
-          document.querySelector('[data-tab="contour"]').click();
-
-          if (history) {
-            history.innerHTML += `<div class="output-result">Mapa de contorno gerado</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-        } catch (e) {
-          if (history) {
-            history.innerHTML += `<div class="output-result error">Erro no mapa de contorno: ${e.message}</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-          console.error("Erro detalhado:", e);
-        }
-        return;
-      }
-
-      if (exprRaw.startsWith("surface ")) {
-        const expr = exprRaw.substring(8).trim();
-        try {
-          const domainObj = { x: adjustedDomain.min, y: adjustedDomain.max };
-          const surfaceDataStr = DescartesInstance.plot3D(expr, domainObj, 30);
-          const surfaceData = JSON.parse(surfaceDataStr);
-
-          drawSurface2DFromData(surfaceData);
-
-          if (history) {
-            history.innerHTML += `<div class="output-result">Superfície 2D gerada</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-        } catch (e) {
-          if (history) {
-            history.innerHTML += `<div class="output-result error">Erro na superfície: ${e.message}</div>`;
-            history.scrollTop = history.scrollHeight;
-          }
-        }
-        return;
-      }
-
-      if (exprRaw.startsWith("revolution")) {
-        const match = exprRaw.match(/^revolution\s+(.+?)\s+around\s+(x|y)/);
-        if (!match) {
-          if (history) {
-            history.innerHTML += `<div class="output-result error">Erro de sintaxe no comando de revolução</div>`;
-            history.scrollTop = history.scrollHeight;
+          try {
+            initComplexThree(expr);
+            document.querySelector('[data-tab="complex"]').click();
+            addHistory(exprRaw, `🌀 Gráfico complexo renderizado: ${escapeHtml(expr)}`, 'success');
+          } catch (err) {
+            console.error(err);
+            addHistory(exprRaw, `Erro no gráfico complexo: ${escapeHtml(err.message)}`, 'error');
           }
           return;
         }
 
-        const expr = match[1].trim();
-        const axis = match[2].trim();
+        if (/^contour\s+/i.test(exprRaw)) {
+          const expr = exprRaw.replace(/^contour\s+/i, '');
+          try {
+            const domainObj = { x: domain.min, y: domain.max };
+            const raw = DescartesInstance.contourMap(expr, domainObj, domainObj, 60);
+            const contourData = JSON.parse(raw);
+            drawContourPlot(contourData);
+            addHistory(exprRaw, '🗺️ Mapa de contorno gerado.', 'success');
+          } catch (err) {
+            console.error(err);
+            addHistory(exprRaw, `Erro no contorno: ${escapeHtml(err.message)}`, 'error');
+          }
+          return;
+        }
+
+        if (/^surface\s+/i.test(exprRaw)) {
+          const expr = exprRaw.replace(/^surface\s+/i, '');
+          try {
+            const domainObj = { x: domain.min, y: domain.max };
+            const raw = DescartesInstance.plot3D(expr, domainObj, 40);
+            const surfaceData = JSON.parse(raw);
+            drawSurface2DFromData(surfaceData);
+            addHistory(exprRaw, '🌐 Superfície 3D gerada.', 'success');
+          } catch (err) {
+            console.error(err);
+            addHistory(exprRaw, `Erro na superfície: ${escapeHtml(err.message)}`, 'error');
+          }
+          return;
+        }
+
+        if (/^revolution\s+/i.test(exprRaw)) {
+          const match = exprRaw.match(/^revolution\s+(.+?)\s+around\s+(x|y)$/i);
+          if (!match) {
+            addHistory(exprRaw, 'Sintaxe: revolution <expr> around x|y', 'error');
+            return;
+          }
+          const expr = match[1].trim();
+          const axis = match[2].toLowerCase();
+          try {
+            const domainObj = { x: domain.min, y: domain.max };
+            const raw = axis === 'x'
+              ? DescartesInstance.revolution3D_str(expr, domainObj)
+              : DescartesInstance.revolution3D_Y_str(expr, domainObj);
+            const points3D = JSON.parse(raw);
+            drawRevolution(points3D, axis);
+            addHistory(exprRaw, `🔁 Revolução gerada em torno do eixo ${axis.toUpperCase()}.`, 'success');
+          } catch (err) {
+            console.error(err);
+            addHistory(exprRaw, `Erro na revolução: ${escapeHtml(err.message)}`, 'error');
+          }
+          return;
+        }
 
         try {
-          const domain3D = { x: adjustedDomain.min, y: adjustedDomain.max };
-          const rawPoints = axis === "x"
-            ? DescartesInstance.revolution3D_str(expr, domain3D)
-            : DescartesInstance.revolution3D_Y_str(expr, domain3D);
+          const raw = DescartesInstance.repl(exprRaw);
+          let parsed = null;
+          try { parsed = JSON.parse(raw); } catch {}
 
-          const points3D = JSON.parse(rawPoints);
-          drawRevolution(points3D, axis);
-
-          if (history) {
-            history.innerHTML += `<div class="output-result">Revolução gerada em torno do eixo ${axis.toUpperCase()}</div>`;
-            history.scrollTop = history.scrollHeight;
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.contour) {
+              drawContourPlot(parsed.contour);
+              addHistory(exprRaw, '🗺️ Mapa de contorno renderizado.', 'success');
+              return;
+            }
+            if (parsed.plot) {
+              const points = parsed.plot.map(([x, y]) => [x, sanitize(y)]).filter(([, y]) => y !== null);
+              const dom = parsed.analysis?.domain || [domain.min, domain.max];
+              add2DSeries(exprRaw, points, dom);
+              document.querySelector('[data-tab="2d"]').click();
+              addHistory(exprRaw, '📈 Função adicionada ao gráfico 2D.', 'success');
+              return;
+            }
           }
-        } catch (e) {
-          if (history) {
-            history.innerHTML += `<div class="output-result error">Erro: ${e.message}</div>`;
-            history.scrollTop = history.scrollHeight;
+
+          addHistory(exprRaw, escapeHtml(String(raw).trim() || '(indefinido)'));
+        } catch (err) {
+          console.error(err);
+          addHistory(exprRaw, `Erro ao executar expressão: ${escapeHtml(err.message)}`, 'error');
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        initThreeJS();
+        initTabs();
+        initControls();
+        renderFunctionList();
+
+        $('runBtn').addEventListener('click', runRepl);
+        $('expr').addEventListener('keydown', e => { if (e.key === 'Enter') runRepl(); });
+        window.addEventListener('resize', onWindowResize);
+
+        Descartes().then(mod => {
+          DescartesInstance = mod;
+          addHistory('sistema', '🌀 Módulo fractal WASM carregado.', 'success');
+          try {
+            initComplexThree('(z-1)/(z+1)');
+          } catch (err) {
+            console.error(err);
+            addHistory('initComplexThree', `Falha ao iniciar gráfico complexo: ${escapeHtml(err.message)}`, 'error');
           }
-        }
-        return;
-      }
-
-      const raw = DescartesInstance.repl(exprRaw);
-      let parsed = null;
-
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        if (history) {
-          history.innerHTML += `<div class="output-result">${raw.trim() || "(indefinido)"}</div>`;
-          history.scrollTop = history.scrollHeight;
-        }
-        return;
-      }
-
-      if (typeof parsed !== "object" || parsed === null) {
-        if (history) {
-          history.innerHTML += `<div class="output-result">${String(parsed)}</div>`;
-          history.scrollTop = history.scrollHeight;
-        }
-        return;
-      }
-
-      if (parsed.contour) {
-        drawContourPlot(parsed.contour);
-        document.querySelector('[data-tab="contour"]').click();
-        if (history) {
-          history.innerHTML += `<div class="output-result">Mapa de contorno renderizado</div>`;
-          history.scrollTop = history.scrollHeight;
-        }
-        return;
-      }
-
-      if (parsed.plot) {
-        let { plot: plotData, analysis } = parsed;
-        analysis = analysis || {};
-        analysis.expr = exprRaw;
-
-        plotData = plotData.map(([x, y]) => [x, sanitize(y)]);
-        for (let key in analysis) analysis[key] = sanitize(analysis[key]);
-
-        add2DSeries(
-          exprRaw,
-          plotData,
-          analysis.domain || [adjustedDomain.min, adjustedDomain.max]
-        );
-
-        currentPlotData = {
-          type: '2d',
-          points: plotData,
-          domain: analysis.domain || [adjustedDomain.min, adjustedDomain.max]
-        };
-
-        renderAnalysis(analysis, analysisBox);
-        document.querySelector('[data-tab="2d"]').click();
-
-        if (history) {
-          history.innerHTML += `<div class="output-result">Função adicionada ao gráfico 2D</div>`;
-          history.scrollTop = history.scrollHeight;
-        }
-        return;
-      }
-
-      if (history) {
-        history.innerHTML += `<div class="output-result">${raw.trim() || "(indefinido)"}</div>`;
-        history.scrollTop = history.scrollHeight;
-      }
-    }
+        }).catch(err => {
+          console.error(err);
+          addHistory('Descartes()', `Falha ao carregar WASM: ${escapeHtml(err.message)}`, 'error');
+        });
+      });
+    })();
   </script>
 </body>
 </html>
