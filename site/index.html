@@ -1461,40 +1461,164 @@ vec2 mandelbrotPerturb(vec2 deltaC){
       return c.z * mix(vec3(1.), clamp(p - 1., 0., 1.), c.y);
     }
 
-    vec3 styleClassic(vec2 w) {
-      float a = c_arg(w), r = c_abs(w), lr = log(1. + r);
-      float hue = fract((a + PI) / (2. * PI));
-      float val = 0.15 + 0.85 * (1. - 1. / (1. + lr));
-      return hsv2rgb(vec3(hue, 0.95, val));
+    float gridLine(float x, float freq, float width) {
+        float v = abs(fract(x * freq) - 0.5);
+        return smoothstep(width, 0.0, v);
     }
 
-    vec3 styleDark(vec2 w) { return styleClassic(w) * 0.55; }
-    vec3 styleNeon(vec2 w) { return abs(sin(w.xyx * 2. + u_time)); }
-    vec3 stylePastel(vec2 w) { return vec3(0.7+0.3*cos(w.x+u_time), 0.5+0.5*cos(w.y+1.), 0.8+0.2*cos(w.x*w.y)); }
-    vec3 stylePhaseGrid(vec2 w) {
-      float g = sin(c_arg(w)*12.) * sin(log(c_abs(w)+1.)*8.);
-      return vec3(0.3,0.5,0.8) + 0.2*g;
+    vec3 styleClassic(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
+        float modLinesB = 0.5 + 0.5 * cos(20.0 * lr);
+        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
+
+        float ringMask = smoothstep(0.86, 0.995, modLinesA);
+        float ringMask2 = smoothstep(0.92, 0.999, modLinesB);
+        float phaseMask = smoothstep(0.90, 0.995, phaseLines);
+        float glow = max(max(ringMask, ringMask2), phaseMask);
+
+        float value = 0.12 + 0.88 * (1.0 - 1.0 / (1.0 + lr));
+        vec3 base = hsv2rgb(vec3(hue, 0.96, value));
+        vec3 lineColor = hsv2rgb(vec3(hue, 0.55, 1.0));
+        return mix(base, lineColor, 0.85 * glow);
     }
-    vec3 styleChecker(vec2 w) {
-      float chk = mod(floor(w.x*4.) + floor(w.y*4.), 2.);
-      return vec3(chk);
-    }
-    vec3 styleRedBlueGrid(vec2 w) { return vec3(0.5 + 0.5*sin(w.x), 0.2, 0.5 + 0.5*cos(w.y)); }
-    vec3 styleTiles(vec2 w) { return fract(w.xyx * 0.5); }
-    vec3 styleBubbles(vec2 w) { return 0.5 + 0.5*cos(w.xyx*3.1415 + u_time); }
-    vec3 styleSmoothBands(vec2 w) { return sin(w.xyx * 2. + u_time) * 0.5 + 0.5; }
-    vec3 styleFractal(vec2 w) {
-      if (w.x < 0.0) return vec3(0.0);
-      float t = w.x / 25.0;
-      float aux = log(1.0 + max(w.y, 0.0));
-      float hue = fract(0.95 + 8.0 * t + 0.08 * aux);
-      float sat = 0.75 + 0.25 * sin(10.0 * t + aux);
-      float val = 0.15 + 0.85 * smoothstep(0.0, 1.0, pow(t, 0.65));
-      vec3 base = hsv2rgb(vec3(hue, sat, val));
-      float glow = 0.5 + 0.5 * cos(40.0 * t - 2.0 * aux);
-      base += 0.12 * glow * vec3(1.0, 0.9, 0.7);
-      return clamp(base, 0.0, 1.0);
-    }
+
+     vec3 styleDark(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float modLinesA = 0.5 + 0.5 * cos(10.0 * lr);
+        float phaseLines = 0.5 + 0.5 * cos(18.0 * a);
+        float glow = max(
+          smoothstep(0.86, 0.995, modLinesA),
+          smoothstep(0.90, 0.995, phaseLines)
+        );
+
+        float value = 0.05 + 0.70 * (1.0 - 1.0 / (1.0 + lr));
+        vec3 base = hsv2rgb(vec3(hue, 0.85, value));
+        return mix(base, vec3(1.0), 0.18 * glow);
+      }
+
+      vec3 styleNeon(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+
+        float rings = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(20.0 * lr));
+        float spokes = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
+
+        vec3 base = hsv2rgb(vec3(hue, 1.0, 0.2 + 0.8 * (1.0 - 1.0 / (1.0 + lr))));
+        vec3 glow = hsv2rgb(vec3(fract(hue + 0.08), 0.2, 1.0));
+        return mix(base, glow, max(rings, spokes) * 0.95);
+      }
+
+      vec3 stylePastel(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float lr = log(1.0 + r);
+        float value = 0.55 + 0.35 * sin(lr * 2.0);
+
+        vec3 base = hsv2rgb(vec3(hue, 0.45, clamp(value, 0.0, 1.0)));
+        float glow = smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(18.0 * a));
+        return mix(base, vec3(1.0), 0.25 * glow);
+      }
+
+      vec3 stylePhaseGrid(vec2 w) {
+        float a = c_arg(w);
+        float r = c_abs(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        vec3 base = hsv2rgb(vec3(hue, 0.90, 0.10 + 0.85 * (1.0 - 1.0 / (1.0 + log(1.0 + r)))));
+        float mesh = max(
+          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * a)),
+          smoothstep(0.90, 0.995, 0.5 + 0.5 * cos(16.0 * log(1.0 + r)))
+        );
+        return mix(base, vec3(1.0), 0.75 * mesh);
+      }
+
+      vec3 styleChecker(vec2 w) {
+        float u = log(1.0 + c_abs(w)) * 8.0;
+        float v = (c_arg(w) + PI) / (2.0 * PI) * 24.0;
+        float cell = mod(floor(u) + floor(v), 2.0);
+        return mix(vec3(0.03), vec3(0.96), cell);
+      }
+
+      vec3 styleRedBlueGrid(vec2 w) {
+        float re = w.x;
+        float im = w.y;
+        float gx = gridLine(re, 1.6, 0.035);
+        float gy = gridLine(im, 1.6, 0.035);
+        vec3 bg = vec3(0.92);
+        bg = mix(bg, vec3(1.0, 0.1, 0.1), gx);
+        bg = mix(bg, vec3(0.1, 0.2, 1.0), gy);
+        return bg;
+      }
+
+      vec3 styleTiles(vec2 w) {
+        vec2 p = w * 2.5;
+        vec2 g = fract(p) - 0.5;
+        vec2 id = floor(p);
+        float mask = step(0.0, sin(id.x * 1.2) * sin(id.y * 1.2));
+        float box = smoothstep(0.48, 0.42, max(abs(g.x), abs(g.y)));
+        vec3 c1 = vec3(0.82, 0.78, 0.96);
+        vec3 c2 = vec3(0.60, 0.00, 0.62);
+        vec3 c3 = vec3(0.26, 0.00, 0.28);
+        vec3 base = mix(c1, c2, mask);
+        return mix(c3, base, box);
+      }
+
+      vec3 styleBubbles(vec2 w) {
+        float r = c_abs(w);
+        float a = c_arg(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+
+        vec2 p = w * 3.0;
+        vec2 gv = fract(p) - 0.5;
+        float d = length(gv);
+        float circle = smoothstep(0.34, 0.30, d) - smoothstep(0.30, 0.26, d);
+
+        vec3 bg = vec3(0.01, 0.01, 0.03);
+        vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
+        bg += col * circle * 1.5;
+
+        float rings = 0.5 + 0.5 * cos(10.0 * log(1.0 + r));
+        bg += 0.12 * hsv2rgb(vec3(hue, 1.0, 1.0)) * rings;
+
+        return clamp(bg, 0.0, 1.0);
+      }
+
+      vec3 styleSmoothBands(vec2 w) {
+        float a = c_arg(w);
+        float r = c_abs(w);
+        float hue = fract((a + PI) / (2.0 * PI));
+        float bands = floor(fract(hue + log(1.0 + r) * 0.25) * 18.0) / 18.0;
+        return hsv2rgb(vec3(bands, 0.95, 0.95));
+      }
+
+      vec3 styleFractal(vec2 w) {
+        if (w.x < 0.0) return vec3(0.0);
+
+        float t = clamp(w.x, 0.0, 1.0);
+        float aux = log(1.0 + max(w.y, 0.0));
+
+        float hue = fract(0.95 + 8.0 * t + 0.08 * aux);
+        float sat = 0.75 + 0.25 * sin(10.0 * t + aux);
+        float val = 0.15 + 0.85 * smoothstep(0.0, 1.0, pow(t, 0.65));
+
+        vec3 base = hsv2rgb(vec3(hue, sat, val));
+        float glow = 0.5 + 0.5 * cos(40.0 * t - 2.0 * aux);
+        base += 0.12 * glow * vec3(1.0, 0.9, 0.7);
+
+        return clamp(base, 0.0, 1.0);
+      }
+
     vec3 styleTetration(vec2 w) {
       vec2 t = c_tetration(w);
       float iter = t.x;
